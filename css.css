@@ -12,29 +12,31 @@ body {
     color: white;
     min-height: 100vh;
     line-height: 2;
-    font-size: 22px; /* texte global plus gros */
+    font-size: 28px; /* texte très gros par défaut */
 }
 
 /* ==========================
    Titres et textes
 ========================== */
-h1, h2, h3, h4 {
+h1, h2, h3, h4, h5, h6 {
     text-align: center;
     color: white;
     text-transform: uppercase;
-    letter-spacing: 3px;
+    letter-spacing: 4px;
     margin: 30px 0;
 }
 
-h1 { font-size: 120px; }
-h2 { font-size: 90px; }
-h3 { font-size: 65px; }
-h4 { font-size: 50px; }
+h1 { font-size: 160px; }
+h2 { font-size: 120px; }
+h3 { font-size: 90px; }
+h4 { font-size: 70px; }
+h5 { font-size: 50px; }
+h6 { font-size: 40px; }
 
 p, li, span, a {
-    font-size: 26px; /* texte normal plus gros */
+    font-size: 32px; /* texte énorme */
     color: aliceblue;
-    line-height: 1.9;
+    line-height: 2;
 }
 
 /* ==========================
@@ -42,15 +44,15 @@ p, li, span, a {
 ========================== */
 header, .menu-bar {
     background: #4a66ff;
-    padding: 35px;
-    box-shadow: 0 5px 25px rgba(0,0,0,0.4);
+    padding: 40px;
+    box-shadow: 0 5px 25px rgba(0,0,0,0.5);
 }
 
 header ul, .menu-bar ul {
     list-style: none;
     display: flex;
     justify-content: center;
-    gap: 40px;
+    gap: 50px;
     flex-wrap: wrap;
 }
 
@@ -59,10 +61,10 @@ header li, .menu-bar li { position: relative; }
 header a, .menu-bar a { 
     color: white;
     text-decoration: none;
-    padding: 20px 45px;
+    padding: 25px 60px;
     display: block;
-    border-radius: 25px;
-    font-size: 28px;
+    border-radius: 30px;
+    font-size: 36px;
     font-weight: bold;
     transition: 0.3s;
 }
@@ -78,15 +80,15 @@ header a:hover, .menu-bar a:hover {
     top: 100%;
     left: 0;
     background: linear-gradient(#3550ff,#2c3b85);
-    min-width: 260px;
+    min-width: 300px;
     border-radius: 15px;
     overflow: hidden;
     z-index: 1000;
 }
 
 .dropdown-content a { 
-    padding: 18px 25px;
-    font-size: 22px;
+    padding: 20px 30px;
+    font-size: 28px;
 }
 
 .dropdown:hover .dropdown-content { display: block; }
@@ -96,15 +98,15 @@ header a:hover, .menu-bar a:hover {
 ========================== */
 button, .btn-action {
     cursor: pointer;
-    font-size: 22px;
-    padding: 16px 25px;
-    border-radius: 22px;
+    font-size: 32px;
+    padding: 20px 30px;
+    border-radius: 25px;
     font-weight: bold;
 }
 
 button:hover, .btn-action:hover {
     background: #6e82ff;
-    transform: scale(1.05);
+    transform: scale(1.1);
 }
 
 /* ==========================
@@ -123,23 +125,23 @@ button:hover, .btn-action:hover {
 
 .login-popup form, .popup form {
     background: linear-gradient(to bottom, #4a66ff, #0a1530);
-    padding: 40px;
-    border-radius: 25px;
+    padding: 50px;
+    border-radius: 30px;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 25px;
     color: white;
-    width: 550px;
+    width: 600px;
     max-height: 90vh;
     overflow-y: auto;
-    box-shadow: 0 0 50px #4a66ff;
+    box-shadow: 0 0 60px #4a66ff;
 }
 
 .login-popup input, .popup input,
 .login-popup select, .popup select,
 .login-popup textarea, .popup textarea {
-    font-size: 20px;
-    padding: 14px 18px;
+    font-size: 24px;
+    padding: 18px 20px;
     border-radius: 20px;
     border: none;
 }
@@ -148,24 +150,24 @@ button:hover, .btn-action:hover {
    Profil
 ========================== */
 .profile-container {
-    max-width: 700px;
+    max-width: 800px;
     margin: 50px auto;
     background: #0f1a3a;
-    padding: 40px;
-    border-radius: 25px;
-    box-shadow: 0 0 40px #4a66ff;
+    padding: 50px;
+    border-radius: 30px;
+    box-shadow: 0 0 50px #4a66ff;
     text-align: center;
 }
 
 .profile-container img {
-    width: 40%;
-    max-width: 200px;
+    width: 45%;
+    max-width: 250px;
     aspect-ratio: 1/1;
     border-radius: 50%;
     object-fit: cover;
-    border: 5px solid #4a66ff;
+    border: 6px solid #4a66ff;
     display: block;
-    margin: 0 auto 25px;
+    margin: 0 auto 30px;
 }
 
 /* ==========================
@@ -174,32 +176,32 @@ button:hover, .btn-action:hover {
 #membersContainer, #commentSection {
     width: 85%;
     margin: 30px auto;
-    font-size: 24px;
+    font-size: 28px;
 }
 
 /* ==========================
    Responsive global
 ========================== */
 @media (max-width: 1200px) {
-    h1 { font-size: 100px; }
-    h2 { font-size: 75px; }
-    h3 { font-size: 55px; }
+    h1 { font-size: 140px; }
+    h2 { font-size: 100px; }
+    h3 { font-size: 75px; }
 }
 
 @media (max-width: 900px) {
-    header ul, .menu-bar ul { flex-direction: column; gap: 25px; align-items: center; }
-    header a, .menu-bar a { font-size: 25px; padding: 18px 35px; }
+    header ul, .menu-bar ul { flex-direction: column; gap: 30px; align-items: center; }
+    header a, .menu-bar a { font-size: 32px; padding: 22px 50px; }
 }
 
 @media (max-width: 600px) {
-    h1 { font-size: 70px; }
-    h2 { font-size: 50px; }
-    h3 { font-size: 40px; }
-    p, li, span { font-size: 22px; }
-    button, .btn-action { font-size: 20px; padding: 14px 18px; }
-    .login-popup form, .popup form { width: 90%; padding: 30px; gap: 15px; }
+    h1 { font-size: 110px; }
+    h2 { font-size: 80px; }
+    h3 { font-size: 60px; }
+    p, li, span, a { font-size: 28px; }
+    button, .btn-action { font-size: 28px; padding: 18px 25px; }
+    .login-popup form, .popup form { width: 95%; padding: 35px; gap: 20px; }
     .login-popup input, .popup input,
     .login-popup select, .popup select,
-    .login-popup textarea, .popup textarea { font-size: 18px; padding: 12px 15px; }
-    .profile-container img { width: 160px; height: 160px; }
+    .login-popup textarea, .popup textarea { font-size: 22px; padding: 16px 18px; }
+    .profile-container img { width: 180px; height: 180px; }
 }
