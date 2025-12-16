@@ -4,218 +4,60 @@
 <meta charset="UTF-8">
 <title>BAC PRO CIEL - Menu déroulant</title>
 <style>
-/* ==========================
-   Police globale et couleurs
-========================== */
-* {
-    font-family: "Comic Sans MS", cursive, sans-serif !important;
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
-body {
-    background: linear-gradient(to bottom, #4a66ff, #0a1530);
-    color: white;
-    min-height: 100vh;
-    line-height: 1.6;
-}
+* { font-family:"Comic Sans MS", cursive, sans-serif; margin:0; padding:0; box-sizing:border-box; }
+body { background: linear-gradient(#a6d6f7, #5c69d6, #0a1530); color:#fff; min-height:100vh; }
+h1 { text-align:center; margin:50px 0 20px; font-size:100px; letter-spacing:5px; }
+h2 { text-align:center; margin:10px 0 40px; font-size:50px; }
 
-/* ==========================
-   Titres et textes
-========================== */
-h1, h2 {
-    text-align: center;
-    color: white;
-    text-transform: uppercase;
-    letter-spacing: 5px;
-    margin: 20px 0;
-}
-
-h1 { font-size: 140px; }
-h2 { font-size: 90px; }
-
-p {
-    font-size: 32px;
-    color: aliceblue;
-    margin: 20px auto;
-    width: 80%;
-    text-align: justify;
-}
-
-/* ==========================
-   Menu
-========================== */
-header, .menu-bar {
-    background: #4a66ff;
-    padding: 25px;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.4);
-}
-
-header ul, .menu-bar ul {
-    list-style: none;
-    display: flex;
-    justify-content: center;
-    gap: 25px;
-    flex-wrap: wrap;
-}
-
-header li, .menu-bar li { position: relative; }
-
-header a, .menu-bar a { 
-    color: white;
-    text-decoration: none;
-    padding: 25px 50px;
-    display: block;
-    border-radius: 25px;
-    font-size: 32px;
-    font-weight: bold;
-    transition: 0.3s;
-    box-shadow:0 3px 12px rgba(0,0,0,0.3);
-}
-
-header a:hover, .menu-bar a:hover { 
-    background: linear-gradient(135deg,#6e82ff,#8aa0ff);
-    box-shadow:0 5px 20px rgba(0,0,0,0.5);
-}
-
-.dropdown-content { 
-    display:none;
-    position:absolute;
-    top:100%;
-    left:0;
-    background:linear-gradient(#3550ff,#2c3b85);
-    min-width:240px;
-    border-radius:15px;
-    overflow:hidden;
-    z-index:1000;
-}
-
-.dropdown-content a { 
-    padding:20px 25px;
-    font-size:28px;
-}
-
+/* Menu déroulant */
+.menu-bar { background:#4a66ff; padding:20px; box-shadow:0 5px 15px rgba(0,0,0,0.3); }
+.menu-bar ul { list-style:none; display:flex; gap:25px; flex-wrap:wrap; justify-content:center; }
+.menu-bar li { position:relative; }
+.menu-bar a { color:white; text-decoration:none; padding:15px 30px; display:block; border-radius:25px; font-size:18px; font-weight:bold; transition:0.3s; box-shadow:0 3px 8px rgba(0,0,0,0.2);}
+.menu-bar a:hover { background:linear-gradient(135deg,#6e82ff,#8aa0ff); box-shadow:0 5px 15px rgba(0,0,0,0.3);}
+.dropdown-content { display:none; position:absolute; top:100%; left:0; background:linear-gradient(#3550ff,#2c3b85); min-width:220px; border-radius:12px; overflow:hidden; z-index:1000; box-shadow:0 5px 15px rgba(0,0,0,0.5);}
+.dropdown-content a { padding:15px 20px; font-size:17px; }
 .dropdown:hover .dropdown-content { display:block; }
+.menu-bar li.dropdown:hover > a { background:linear-gradient(135deg,#6e82ff,#8aa0ff); }
 
-/* ==========================
-   PC animé
-========================== */
-.pc-image {
-    width:900px;
-    max-width:95%;
-    display:block;
-    margin:40px auto;
-    animation: glow 2s infinite alternate;
-}
+/* Boutons Compte/Admin */
+#profilBtn, #deleteAccountBtn, #logoutBtn, #adminLink { display:none; font-size:18px; }
+#userDisplay { text-align:center; font-size:28px; margin-top:25px; font-weight:bold; }
+
+/* PC animé */
+.pc-image { width:800px; max-width:90%; display:block; margin:40px auto; animation: glow 2s infinite alternate; }
 @keyframes glow {
-    0% { filter: drop-shadow(0 0 50px #b266ff) drop-shadow(0 0 100px #8f33ff) drop-shadow(0 0 180px #c266ff); }
-    50% { filter: drop-shadow(0 0 100px #b266ff) drop-shadow(0 0 160px #8f33ff) drop-shadow(0 0 300px #c266ff); }
-    100% { filter: drop-shadow(0 0 50px #b266ff) drop-shadow(0 0 100px #8f33ff) drop-shadow(0 0 180px #c266ff); }
+  0% { filter: drop-shadow(0 0 40px #b266ff) drop-shadow(0 0 80px #8f33ff) drop-shadow(0 0 140px #c266ff);}
+  50% { filter: drop-shadow(0 0 80px #b266ff) drop-shadow(0 0 120px #8f33ff) drop-shadow(0 0 200px #c266ff);}
+  100% { filter: drop-shadow(0 0 40px #b266ff) drop-shadow(0 0 80px #8f33ff) drop-shadow(0 0 140px #c266ff);}
 }
 
-/* ==========================
-   Popups Connexion / Inscription
-========================== */
-.login-popup {
-    display:none;
-    position:fixed;
-    inset:0;
-    background:rgba(0,0,0,0.85);
-    justify-content:center;
-    align-items:center;
-    z-index:10000;
-}
-
-.login-popup form {
-    background:#0f1a3a;
-    padding:40px;
-    border-radius:30px;
-    width:90%;
-    max-width:600px;
-    max-height:90vh;
+/* Popups */
+.login-popup { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); justify-content:center; align-items:center; z-index:10000; }
+.login-popup form { 
+    background:#0f1a3a; 
+    padding:20px 25px;
+    border-radius:25px; 
+    width:450px; 
+    max-height:80vh;
     overflow-y:auto;
-    display:flex;
-    flex-direction:column;
-    gap:20px;
-    font-family:"Comic Sans MS", cursive, sans-serif !important;
+    display:flex; 
+    flex-direction:column; 
+    gap:10px;
+    box-shadow:0 0 35px #4a66ff; 
 }
-
-.login-popup input {
-    padding:18px;
-    border-radius:20px;
-    border:none;
-    font-size:24px;
-    font-family:"Comic Sans MS", cursive, sans-serif !important;
+.login-popup input { 
+    padding:9px 14px; 
+    border-radius:16px; 
+    border:none; 
+    font-size:16px; 
 }
-
-.password-box {
-    display:flex;
-    align-items:center;
-    gap:15px;
-}
-
-.password-box button {
-    background:#4a66ff;
-    border:none;
-    border-radius:25px;
-    padding:15px 20px;
-    cursor:pointer;
-    color:white;
-    font-weight:bold;
-    font-size:22px;
-    font-family:"Comic Sans MS", cursive, sans-serif !important;
-}
-
-.login-popup button.submit {
-    background:#6e82ff;
-    color:white;
-    border:none;
-    padding:18px;
-    border-radius:30px;
-    font-size:26px;
-    cursor:pointer;
-    transition:0.3s;
-    font-family:"Comic Sans MS", cursive, sans-serif !important;
-}
-
+.password-box { display:flex; align-items:center; gap:10px; }
+.password-box button { background:#4a66ff; border:none; border-radius:20px; padding:12px; cursor:pointer; color:white; font-weight:bold; }
+.login-popup button.submit { background:#6e82ff; color:white; border:none; padding:12px; border-radius:25px; font-size:16px; cursor:pointer; transition:0.3s; }
 .login-popup button.submit:hover { background:#8aa0ff; }
+.login-popup button.close { background:#2c3b85; color:white; border:none; padding:10px; border-radius:25px; cursor:pointer; font-size:14px; }
 
-.login-popup button.close {
-    background:#2c3b85;
-    color:white;
-    border:none;
-    padding:15px;
-    border-radius:30px;
-    cursor:pointer;
-    font-size:22px;
-    font-family:"Comic Sans MS", cursive, sans-serif !important;
-}
-
-/* ==========================
-   Responsive
-========================== */
-@media (max-width: 1200px) {
-    h1 { font-size:120px; }
-    h2 { font-size:70px; }
-    header a { font-size:28px; padding:20px 40px; }
-    .pc-image { width:80%; }
-}
-
-@media (max-width: 900px) {
-    header ul { flex-direction:column; gap:20px; align-items:center; }
-    h1 { font-size:100px; }
-    h2 { font-size:60px; }
-}
-
-@media (max-width: 600px) {
-    h1 { font-size:70px; }
-    h2 { font-size:45px; }
-    header a { font-size:24px; padding:15px 30px; }
-    .login-popup form { font-size:20px; padding:30px; }
-    .login-popup input { font-size:20px; padding:15px; }
-    .password-box button { font-size:20px; padding:12px; }
-    .login-popup button.submit, .login-popup button.close { font-size:20px; padding:15px; }
-}
 </style>
 </head>
 <body>
@@ -240,11 +82,23 @@ header a:hover, .menu-bar a:hover {
             <a href="#" id="logoutBtn">Déconnexion</a>
         </div>
     </li>
+    <li class="dropdown">
+        <a href="#" id="adminLink">Admin</a>
+        <div class="dropdown-content">
+            <a href="gestionnair des membre.html">Gestion des membres</a>
+        </div>
+    </li>
+    <li class="dropdown">
+        <a href="#">information</a>
+        <div class="dropdown-content">
+            <a href="actualité.html">Cybersécurité</a>
+    </li>
 </ul>
 </header>
 
 <h1>BAC PRO CIEL</h1>
 <h2>Tout ce que tu dois savoir sur le Bac Pro CIEL</h2>
+<div id="userDisplay"></div>
 <img src="Design_sans_titre-removebg-preview.png" class="pc-image" alt="PC">
 
 <!-- Popups Connexion -->
@@ -280,12 +134,86 @@ header a:hover, .menu-bar a:hover {
 </div>
 
 <script>
-function togglePassword(id){ 
-    const input=document.getElementById(id); 
-    input.type = input.type==='password'?'text':'password'; 
+/* --- SUPERADMIN invincible --- */
+if(!localStorage.getItem("SUPERADMIN")){
+    localStorage.setItem("SUPERADMIN", JSON.stringify({
+        prenom:"Super", nom:"Admin", username:"SUPERADMIN", password:"MASTER",
+        role:"admin", banned:false, createdAt:new Date().toLocaleDateString(), protected:true
+    }));
 }
-signupBtn.onclick = () => { signupForm.style.display='flex'; };
-loginBtn.onclick = () => { loginForm.style.display='flex'; };
+
+/* --- Utilisateur connecté --- */
+function getConnected(){ return JSON.parse(localStorage.getItem("connectedUser")); }
+function afficherUtilisateur(user){
+    loginBtn.style.display='none';
+    signupBtn.style.display='none';
+    profilBtn.style.display='inline-block';
+    deleteAccountBtn.style.display='inline-block';
+    logoutBtn.style.display='inline-block';
+    adminLink.style.display = user.role==='admin' ? 'inline-block' : 'none';
+    userDisplay.textContent = `Bienvenue, ${user.prenom} ${user.nom} (${user.role})`;
+}
+
+/* --- Toggle mot de passe --- */
+function togglePassword(id){
+    const input=document.getElementById(id);
+    input.type = input.type==='password'?'text':'password';
+}
+
+/* --- Connexion --- */
+document.getElementById('formLogin').addEventListener('submit', e=>{
+    e.preventDefault();
+    const username=loginUsername.value;
+    const password=loginPassword.value;
+    const data=localStorage.getItem(username);
+    if(!data){ alert('Utilisateur inconnu'); return; }
+    const user=JSON.parse(data);
+    if(user.password!==password){ alert('Mot de passe incorrect'); return; }
+    if(user.banned){ alert("Compte banni !"); return; }
+    sessionStorage.setItem('loggedUser', user.username);
+    localStorage.setItem("connectedUser", JSON.stringify(user));
+    afficherUtilisateur(user);
+    loginForm.style.display='none';
+});
+
+/* --- Création compte --- */
+// Ouverture de la popup pour tout le monde
+signupBtn.onclick = () => { signupForm.style.display = 'flex'; };
+
+document.getElementById('formSignup').addEventListener('submit', e=>{
+    e.preventDefault();
+    const user={
+        prenom:signupPrenom.value, nom:signupNom.value, dob:signupDob.value,
+        email:signupEmail.value, username:signupUsername.value, password:signupPassword.value,
+        role:'client'
+    };
+    if(localStorage.getItem(user.username)){ alert('Utilisateur existant !'); return; }
+    localStorage.setItem(user.username, JSON.stringify(user));
+    alert('Compte créé !');
+    signupForm.style.display='none';
+});
+
+/* --- Gestion profil / suppression / déconnexion --- */
+profilBtn.onclick=()=>window.location.href="profil.html";
+deleteAccountBtn.onclick=()=>{
+    if(confirm("Supprimer le compte ?")){
+        const username=sessionStorage.getItem('loggedUser');
+        localStorage.removeItem(username);
+        sessionStorage.removeItem('loggedUser');
+        alert("Compte supprimé !");
+        location.reload();
+    }
+};
+logoutBtn.onclick=()=>{ sessionStorage.removeItem('loggedUser'); location.reload(); };
+
+/* --- Vérification session au chargement --- */
+window.onload=()=>{
+    const u=sessionStorage.getItem('loggedUser');
+    if(u){ const user=JSON.parse(localStorage.getItem(u)); afficherUtilisateur(user); }
+};
+
+/* --- Affichage popup Connexion --- */
+loginBtn.onclick=()=>loginForm.style.display='flex';
 </script>
 
 </body>
