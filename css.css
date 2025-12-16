@@ -2,11 +2,10 @@
    Police globale et couleurs
 ========================== */
 * {
-    font-family: "Comic Sans MS", cursive, sans-serif !important;
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
+   <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet">
+<style>
+* { font-family: 'Comic Neue', cursive, sans-serif !important; }
+</style>
 
 body {
     background: linear-gradient(to bottom, #4a66ff, #0a1530);
@@ -251,3 +250,4 @@ button:hover, .btn-action:hover {
     font-size: 18px;
     cursor: pointer;
 }
+
