@@ -2,11 +2,11 @@
    Police globale et couleurs
 ========================== */
 * {
-   <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet">
-<style>
-* { font-family: 'Comic Neue', cursive, sans-serif !important; }
-</style>
-
+    font-family: "Comic Sans MS", cursive, sans-serif !important;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
 body {
     background: linear-gradient(to bottom, #4a66ff, #0a1530);
     color: white;
