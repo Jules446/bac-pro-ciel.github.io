@@ -4,8 +4,7 @@
 <meta charset="UTF-8">
 <title>BAC PRO CIEL - Menu déroulant</title>
 <style>
-* {font-family: "Comic Neue", "Kristen ITC", "Chalkboard SE", sans-serif;
- margin:0; padding:0; box-sizing:border-box; }
+* { font-family: "Comic Neue", "Kristen ITC", "Chalkboard SE", sans-serif; margin:0; padding:0; box-sizing:border-box; }
 body { background: linear-gradient(#a6d6f7, #5c69d6, #0a1530); color:#fff; min-height:100vh; }
 h1 { text-align:center; margin:50px 0 20px; font-size:100px; letter-spacing:5px; }
 h2 { text-align:center; margin:10px 0 40px; font-size:50px; }
@@ -26,14 +25,7 @@ h2 { text-align:center; margin:10px 0 40px; font-size:50px; }
 #userDisplay { text-align:center; font-size:28px; margin-top:25px; font-weight:bold; }
 
 /* PC animé */
-.pc-image { 
-    width:800px; 
-    max-width:90%; 
-    display:block; 
-    margin:40px auto; 
-    animation: glow 2s infinite alternate; 
-}
-
+.pc-image { width:800px; max-width:90%; display:block; margin:40px auto; animation: glow 2s infinite alternate; }
 @keyframes glow {
     0% { filter: drop-shadow(0 0 40px #b266ff) drop-shadow(0 0 80px #8f33ff) drop-shadow(0 0 140px #c266ff);}
     50% { filter: drop-shadow(0 0 80px #b266ff) drop-shadow(0 0 120px #8f33ff) drop-shadow(0 0 200px #c266ff);}
@@ -49,6 +41,9 @@ h2 { text-align:center; margin:10px 0 40px; font-size:50px; }
 .login-popup button.submit { background:#6e82ff; color:white; border:none; padding:15px; border-radius:25px; font-size:18px; cursor:pointer; transition:0.3s; }
 .login-popup button.submit:hover { background:#8aa0ff; }
 .login-popup button.close { background:#2c3b85; color:white; border:none; padding:12px; border-radius:25px; cursor:pointer; font-size:16px; }
+
+/* Texte responsive */
+#deviceDisplay { text-align:center; font-size:30px; margin-top:20px; font-weight:bold; }
 </style>
 </head>
 <body>
@@ -83,6 +78,7 @@ h2 { text-align:center; margin:10px 0 40px; font-size:50px; }
         <a href="#">information</a>
         <div class="dropdown-content">
             <a href="actualité.html">Cybersécurité</a>
+        </div>
     </li>
 </ul>
 </header>
@@ -91,6 +87,7 @@ h2 { text-align:center; margin:10px 0 40px; font-size:50px; }
 <h2>Tout ce que tu dois savoir sur le Bac Pro CIEL</h2>
 <div id="userDisplay"></div>
 <img src="Design_sans_titre-removebg-preview.png" class="pc-image" alt="PC">
+<div id="deviceDisplay"></div>
 
 <!-- Popups Connexion -->
 <div class="login-popup" id="loginForm">
@@ -125,9 +122,6 @@ h2 { text-align:center; margin:10px 0 40px; font-size:50px; }
 </div>
 
 <script>
-
-
-
 /* --- SUPERADMIN invincible --- */
 if(!localStorage.getItem("SUPERADMIN")){
     localStorage.setItem("SUPERADMIN", JSON.stringify({
@@ -140,7 +134,7 @@ if(!localStorage.getItem("SUPERADMIN")){
 function getConnected(){ return JSON.parse(localStorage.getItem("connectedUser")); }
 function afficherUtilisateur(user){
     loginBtn.style.display='none';
-    signupBtn.style.display='none';
+    signupBtn.style.display='inline-block';
     profilBtn.style.display='inline-block';
     deleteAccountBtn.style.display='inline-block';
     logoutBtn.style.display='inline-block';
@@ -171,11 +165,8 @@ document.getElementById('formLogin').addEventListener('submit', e=>{
 });
 
 /* --- Création compte --- */
-signupBtn.onclick=()=>{
-    const user=getConnected();
-    if(!user || user.role!=='admin'){ alert("Seul un admin peut créer un compte !"); return; }
-    signupForm.style.display='flex';
-};
+signupBtn.onclick=()=> signupForm.style.display='flex';
+
 document.getElementById('formSignup').addEventListener('submit', e=>{
     e.preventDefault();
     const user={
@@ -210,8 +201,8 @@ window.onload=()=>{
 
 /* --- Affichage popups --- */
 loginBtn.onclick=()=>loginForm.style.display='flex';
-</script>
-<script>
+
+/* --- Texte responsive --- */
 function displayDeviceText() {
     const display = document.getElementById("deviceDisplay");
     const w = window.innerWidth;
@@ -229,6 +220,3 @@ window.addEventListener("resize", displayDeviceText);
 
 </body>
 </html>
-
-
-
