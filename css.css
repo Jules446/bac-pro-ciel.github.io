@@ -2,7 +2,8 @@
    Police globale et couleurs
 ========================== */
 * {
-    font-family: "Comic Sans MS", cursive;
+    font-family: "Comic Neue", "Kristen ITC", "Chalkboard SE", sans-serif;
+
     box-sizing: border-box;
     margin: 0;
     padding: 0;
@@ -205,4 +206,5 @@ button:hover, .btn-action:hover {
     .login-popup textarea, .popup textarea { font-size: 22px; padding: 16px 18px; }
     .profile-container img { width: 180px; height: 180px; }
 }
+
 
