@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Profil Utilisateur</title>
+<style>
+body {
+    font-family:"Comic Sans MS", cursive, sans-serif;
+    background: linear-gradient(#a6d6f7, #5c69d6, #0a1530);
+    color:#fff;
+    margin:0;
+    min-height:100vh;
+}
+
+/* --- Menu déroulant --- */
+.menu-bar { 
+    background:#4a66ff; 
+    padding:20px; 
+    box-shadow:0 5px 15px rgba(0,0,0,0.3); 
+}
+.menu-bar ul { 
+    list-style:none; 
+    display:flex; 
+    gap:25px; 
+    justify-content:center; 
+    margin:0; 
+    padding:0; 
+}
+.menu-bar li { position:relative; }
+.menu-bar a { 
+    color:white; 
+    text-decoration:none; 
+    padding:15px 30px; 
+    display:block; 
+    border-radius:25px; 
+    font-size:22px; 
+    font-weight:bold;
+    transition:0.3s; 
+}
+.menu-bar a:hover { 
+    background:linear-gradient(135deg,#6e82ff,#8aa0ff);
+}
+.dropdown-content { 
+    display:none; 
+    position:absolute; 
+    top:100%; left:0; 
+    background:linear-gradient(#3550ff,#2c3b85); 
+    min-width:200px; 
+    border-radius:12px; 
+    overflow:hidden; 
+    z-index:1000; 
+}
+.dropdown-content a { 
+    padding:15px 20px; 
+    font-size:18px; 
+}
+.dropdown:hover .dropdown-content { display:block; }
+/* --- Profil --- */
+.profile-container {
+    max-width:600px;
+    margin:50px auto;
+    background:#0f1a3a;
+    padding:30px;
+    border-radius:20px;
+    box-shadow:0 0 25px #4a66ff;
+    text-align:center;
+}
+.profile-container img {
+    width:150px;
+    height:150px;
+    border-radius:50%;
+    object-fit:cover;
+    border:3px solid #4a66ff;
+    margin-bottom:20px;
+}
+.profile-container p { font-size:20px; margin:10px 0;}
+.btn-action {
+    display:inline-block;
+    padding:12px 25px;
+    border-radius:25px;
+    background:#4a66ff;
+    color:#fff;
+    border:none;
+    cursor:pointer;
+    margin:5px;
+    font-size:18px;
+    font-weight:bold;
+    transition:0.2s;
+}
+.btn-action:hover { background:#6e82ff; }
+
+/* --- Popup --- */
+.popup {
+    display:none;
+    position:fixed;
+    top:0; left:0;
+    width:100%; height:100%;
+    background:rgba(0,0,0,0.7);
+    justify-content:center; align-items:center;
+    z-index:1000;
+}
+.popup form {
+    background:#1a1a2e;
+    padding:30px;
+    border-radius:20px;
+    display:flex;
+    flex-direction:column;
+    gap:15px;
+    width:400px;
+}
+.popup input { padding:10px; border-radius:10px; border:none; font-size:16px;}
+.popup button {
+    padding:12px;
+    border-radius:15px;
+    border:none;
+    cursor:pointer;
+    background:#4a66ff;
+    color:#fff;
+    font-weight:bold;
+    font-size:16px;
+}
+.popup button:hover { background:#6e82ff;}
+</style>
+</head>
+<body>
+
+<!-- Menu -->
+<header class="menu-bar">
+  <ul>
+    <li class="dropdown">
+      <a href="menu.html">Menu</a>
+      <div class="dropdown-content">
+        <a href="Cybersécurité.html">Cybersécurité</a>
+        <a href="informatique.html">Informatique</a>
+        <a href="éléctronique.html">Électronique</a>
+      </div>
+    </li>
+    <li class="dropdown">
+      <a href="profil.html">Compte</a>
+      <div class="dropdown-content">
+        <a href="#" id="signupBtn">Créer un compte</a>
+        <a href="#" id="loginBtn">Connexion</a>
+        <a href="#" id="logoutBtn" style="display:none;">Déconnexion</a>
+      </div>
+    </li>
+    <li class="dropdown">
+        <a href="#">information</a>
+        <div class="dropdown-content">
+            <a href="actualité.html">Cybersécurité</a>
+    </li>
+  </ul>
+</header>
+
+<!-- --- Profil utilisateur --- -->
+<div class="profile-container" id="profileContainer">
+    <img id="profilePic" src="https://via.placeholder.com/150" alt="Photo de profil">
+    <p><strong>Prénom:</strong> <span id="profilPrenom"></span></p>
+    <p><strong>Nom:</strong> <span id="profilNom"></span></p>
+    <p><strong>Email:</strong> <span id="profilEmail"></span></p>
+    <p><strong>Date de naissance:</strong> <span id="profilDob"></span></p>
+    <p><strong>Nom d'utilisateur:</strong> <span id="profilUsername"></span></p>
+    <button class="btn-action" id="editProfileBtn">Modifier mon profil</button>
+    <button class="btn-action" id="logoutBtn">Déconnexion</button>
+</div>
+
+<!-- --- Popup modifier profil --- -->
+<div class="popup" id="editPopup">
+    <form id="editForm">
+        <h2 style="text-align:center;color:white;">Modifier le profil</h2>
+        <input type="text" id="editPrenom" placeholder="Prénom">
+        <input type="text" id="editNom" placeholder="Nom">
+        <input type="email" id="editEmail" placeholder="Email">
+        <input type="date" id="editDob" placeholder="Date de naissance">
+        <input type="password" id="editPassword" placeholder="Mot de passe">
+        <input type="file" id="editPhoto" accept="image/*">
+        <button type="submit">Enregistrer</button>
+        <button type="button" id="closePopup">Annuler</button>
+    </form>
+</div>
+
+<!-- --- Popup connexion si pas connecté --- -->
+<div class="popup" id="loginPopup">
+    <form id="loginPopupForm">
+        <h2 style="text-align:center;color:white;">Connexion requise</h2>
+        <input type="text" id="popupUsername" placeholder="Nom d'utilisateur">
+        <input type="password" id="popupPassword" placeholder="Mot de passe">
+        <button type="submit">Se connecter</button>
+    </form>
+</div>
+
+<script>
+// --- Vérifier si connecté ---
+let connectedUsername = localStorage.getItem('connectedUser');
+let user = connectedUsername ? JSON.parse(localStorage.getItem(connectedUsername)) : null;
+
+// --- Références éléments ---
+const profilPrenom = document.getElementById('profilPrenom');
+const profilNom = document.getElementById('profilNom');
+const profilEmail = document.getElementById('profilEmail');
+const profilDob = document.getElementById('profilDob');
+const profilUsername = document.getElementById('profilUsername');
+const profilePic = document.getElementById('profilePic');
+const editProfileBtn = document.getElementById('editProfileBtn');
+const editPopup = document.getElementById('editPopup');
+const closePopup = document.getElementById('closePopup');
+const editForm = document.getElementById('editForm');
+const logoutBtn = document.getElementById('logoutBtn');
+const editPhotoInput = document.getElementById('editPhoto');
+const editPrenomInput = document.getElementById('editPrenom');
+const editNomInput = document.getElementById('editNom');
+const editEmailInput = document.getElementById('editEmail');
+const editDobInput = document.getElementById('editDob');
+const editPasswordInput = document.getElementById('editPassword');
+const adminMenu = document.getElementById('adminMenu');
+const loginPopup = document.getElementById('loginPopup');
+const loginPopupForm = document.getElementById('loginPopupForm');
+const popupUsername = document.getElementById('popupUsername');
+const popupPassword = document.getElementById('popupPassword');
+
+// --- Redirection si pas connecté ---
+if(!user){
+    loginPopup.style.display = 'flex';
+} else {
+    if(user.role === 'admin') adminMenu.style.display = 'block';
+}
+
+// --- Charger affichage ---
+function updateProfileDisplay(){
+    if(!user) return;
+    profilPrenom.textContent = user.prenom || '';
+    profilNom.textContent = user.nom || '';
+    profilEmail.textContent = user.email || '';
+    profilDob.textContent = user.dob || '';
+    profilUsername.textContent = user.username || '';
+    profilePic.src = user.photo || "https://via.placeholder.com/150";
+}
+updateProfileDisplay();
+
+// --- Popup modifier ---
+editProfileBtn.onclick = () => { 
+    if(!user) return;
+    editPopup.style.display = 'flex'; 
+    editPrenomInput.value = user.prenom || '';
+    editNomInput.value = user.nom || '';
+    editEmailInput.value = user.email || '';
+    editDobInput.value = user.dob || '';
+    editPasswordInput.value = '';
+    editPhotoInput.value = '';
+};
+closePopup.onclick = () => { editPopup.style.display = 'none'; };
+
+// --- Prévisualisation photo ---
+editPhotoInput.onchange = function(e){
+    const file = e.target.files[0];
+    if(file){
+        const reader = new FileReader();
+        reader.onload = function(evt){ profilePic.src = evt.target.result; };
+        reader.readAsDataURL(file);
+    }
+};
+
+// --- Enregistrer modifications ---
+editForm.onsubmit = e=>{
+    e.preventDefault();
+    if(!user) return;
+
+    if(editPrenomInput.value) user.prenom = editPrenomInput.value;
+    if(editNomInput.value) user.nom = editNomInput.value;
+    if(editEmailInput.value) user.email = editEmailInput.value;
+    if(editDobInput.value) user.dob = editDobInput.value;
+    if(editPasswordInput.value) user.password = editPasswordInput.value;
+
+    const file = editPhotoInput.files[0];
+    if(file){
+        const reader = new FileReader();
+        reader.onload = function(evt){
+            user.photo = evt.target.result;
+            localStorage.setItem(user.username, JSON.stringify(user));
+            editPopup.style.display='none';
+            updateProfileDisplay();
+        };
+        reader.readAsDataURL(file);
+    } else {
+        localStorage.setItem(user.username, JSON.stringify(user));
+        editPopup.style.display='none';
+        updateProfileDisplay();
+    }
+};
+
+// --- Déconnexion ---
+logoutBtn.onclick = () => {
+    localStorage.removeItem('connectedUser');
+    window.location.href = "menu.html";
+};
+
+// --- Connexion via popup ---
+loginPopupForm.onsubmit = e => {
+    e.preventDefault();
+    const username = popupUsername.value.trim();
+    const password = popupPassword.value.trim();
+    const stored = localStorage.getItem(username);
+
+    if(!stored){ alert('Utilisateur non trouvé !'); return; }
+
+    const loginUserObj = JSON.parse(stored);
+    if(loginUserObj.password !== password){ alert('Mot de passe incorrect !'); return; }
+
+    localStorage.setItem('connectedUser', loginUserObj.username);
+    user = loginUserObj;
+    loginPopup.style.display = 'none';
+    if(user.role === 'admin') adminMenu.style.display = 'block';
+    updateProfileDisplay();
+};
+</script>
+
+</body>
+</html>

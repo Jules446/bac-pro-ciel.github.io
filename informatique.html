@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Cybersécurité - BAC PRO CIEL</title>
+<style>
+/* --- Général --- */
+body {
+    font-family: "Comic Sans MS", cursive, sans-serif;
+    background: linear-gradient(#a6d6f7, #5c69d6, #0a1530);
+    color: white;
+    margin:0;
+    line-height:1.6;
+}
+
+/* --- Menu déroulant --- */
+.menu-bar { 
+    background:#4a66ff; 
+    padding:20px; 
+    box-shadow:0 5px 15px rgba(0,0,0,0.3); 
+}
+.menu-bar ul { 
+    list-style:none; 
+    display:flex; 
+    gap:25px; 
+    justify-content:center; 
+    margin:0; 
+    padding:0; 
+}
+.menu-bar li { position:relative; }
+.menu-bar a { 
+    color:white; 
+    text-decoration:none; 
+    padding:15px 30px; 
+    display:block; 
+    border-radius:25px; 
+    font-size:22px; 
+    font-weight:bold;
+    transition:0.3s; 
+}
+.menu-bar a:hover { 
+    background:linear-gradient(135deg,#6e82ff,#8aa0ff);
+}
+.dropdown-content { 
+    display:none; 
+    position:absolute; 
+    top:100%; left:0; 
+    background:linear-gradient(#3550ff,#2c3b85); 
+    min-width:200px; 
+    border-radius:12px; 
+    overflow:hidden; 
+    z-index:1000; 
+}
+.dropdown-content a { 
+    padding:15px 20px; 
+    font-size:18px; 
+}
+.dropdown:hover .dropdown-content { display:block; }
+
+/* --- Titres --- */
+h1 { text-align:center; font-size:80px; margin-top:50px; letter-spacing:5px; }
+h2 { text-align:center; font-size:50px; margin:30px 0 20px 0; }
+
+/* --- Texte principal --- */
+#mainText {
+    width:80%; margin:0 auto 20px auto; font-size:22px; text-align:justify;
+    padding:20px; background:#222; border-radius:20px; position:relative;
+}
+#likeMainBtn {
+    position:absolute; top:10px; right:10px;
+    background:#4a66ff; border:none; border-radius:12px; color:white; 
+    padding:6px 12px; cursor:pointer; font-weight:bold; display:flex; gap:5px; align-items:center;
+    transition:0.3s;
+}
+#likeMainBtn:hover { background:#6e82ff; transform:scale(1.05); }
+#likeMainBtn.liked { background:#22c55e; transform:scale(1.1); }
+
+/* --- Popups --- */
+.login-popup {
+    display:none;
+    position:fixed;
+    top:0; left:0;
+    width:100%; height:100%;
+    background:rgba(0,0,0,0.7);
+    justify-content:center; 
+    align-items:center;
+    z-index:1000;
+}
+.login-popup form {
+    background:#1a1a2e;
+    padding:40px;
+    border-radius:20px;
+    display:flex;
+    flex-direction:column;
+    gap:20px;
+    width:450px;
+}
+.login-popup input, .login-popup select, .login-popup textarea {
+    padding:15px;
+    border-radius:12px;
+    border:none;
+    font-size:18px;
+}
+.login-popup button {
+    padding:12px;
+    border-radius:15px;
+    border:none;
+    font-size:18px;
+    cursor:pointer;
+    background:#4a66ff;
+    color:white;
+    font-weight:bold;
+}
+.login-popup button:hover { background:#6e82ff; }
+
+/* --- Section Commentaires --- */
+#commentSection {
+    width:80%; margin:0 auto 40px auto;
+}
+#commentSection form textarea {
+    width:100%;
+    padding:10px;
+    margin-bottom:10px;
+    border-radius:10px;
+    border:none;
+    font-size:18px;
+}
+#commentSection form button {
+    padding:12px;
+    border-radius:12px;
+    border:none;
+    background:#4a66ff;
+    color:white;
+    font-size:18px;
+    cursor:pointer;
+}
+#commentSection form button:hover { background:#6e82ff; }
+
+/* --- Commentaires --- */
+.comment, .reply {
+    background:#222; padding:10px; border-radius:10px; margin-bottom:10px; position:relative;
+}
+.likeBtn, .likeReplyBtn {
+    background: #4a66ff;
+    border: none;
+    border-radius: 12px;
+    color: white;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-weight: bold;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.3s ease;
+}
+.likeBtn:hover, .likeReplyBtn:hover { background: #6e82ff; transform: scale(1.05); }
+.likeBtn.liked, .likeReplyBtn.liked { background: #22c55e; transform: scale(1.1); }
+.replyBtn {
+    background:#888; color:white; border:none; border-radius:8px; padding:4px 8px; cursor:pointer; margin-left:5px;
+}
+.replyBtn:hover { background:#aaa; }
+</style>
+</head>
+<body>
+
+<header class="menu-bar">
+  <ul>
+    <li class="dropdown">
+      <a href="menu.html">Menu</a>
+      <div class="dropdown-content">
+        <a href="Cybersécurité.html">Cybersécurité</a>
+        <a href="informatique.html">Informatique</a>
+        <a href="éléctronique.html">Électronique</a>
+      </div>
+    </li>
+    <li class="dropdown">
+      <a href="profil.html">Compte</a>
+      <div class="dropdown-content">
+        <a href="#" id="signupBtn">Créer un compte</a>
+        <a href="#" id="loginBtn">Connexion</a>
+        <a href="#" id="logoutBtn" style="display:none;">Déconnexion</a>
+      </div>
+    </li>
+    <li class="dropdown">
+        <a href="#">information</a>
+        <div class="dropdown-content">
+            <a href="actualité.html">Cybersécurité</a>
+    </li>
+  </ul>
+</header>
+
+<!-- Contenu principal -->
+<h1>BAC PRO CIEL</h1>
+<h2>Le Bac Pro CIEL en Informatique</h2>
+<div id="mainText">
+   Le Bac Professionnel CIEL forme également les élèves aux différentes facettes de l’informatique.<br>
+Ils apprennent la programmation et se familiarisent avec plusieurs langages adaptés aux systèmes embarqués et aux logiciels.<br>
+La maintenance des ordinateurs et la gestion des réseaux font partie intégrante de leur apprentissage.<br>
+Ils sont formés à sécuriser les données et à assurer le bon fonctionnement des systèmes informatiques.<br>
+Les élèves apprennent à configurer des réseaux, à dépanner des ordinateurs, à installer et gérer des logiciels ainsi qu’à gérer la communication entre différents équipements.<br>
+Des projets pratiques, comme la programmation de microcontrôleurs, la création de petits robots ou la gestion de réseaux locaux, leur permettent d’appliquer leurs connaissances.<br>
+Cette formation ouvre des perspectives vers des métiers comme technicien informatique, dépanneur multimédia, intégrateur de systèmes ou administrateur de réseaux.<br>
+Elle permet également de poursuivre vers des études supérieures telles que des BTS ou licences professionnelles en électronique et informatique.<br>
+Grâce à ces compétences, les élèves sont préparés à évoluer dans un monde où l’électronique et l’informatique sont omniprésentes, et à résoudre des problèmes techniques avec méthode et efficacité.<br>    <button id="likeMainBtn">👍 0</button>
+</div>
+
+<!-- Section Commentaires -->
+<div id="commentSection">
+    <h2>Commentaires</h2>
+    <form id="commentForm">
+        <textarea id="commentText" placeholder="Écrire un commentaire..." required></textarea>
+        <button type="submit">Poster</button>
+    </form>
+    <div id="commentsList"></div>
+</div>
+
+<!-- Popups Connexion/Création -->
+<div class="login-popup" id="loginForm">
+    <form id="formLogin">
+        <h2>Connexion</h2>
+        <input type="text" id="loginUsername" placeholder="Nom d'utilisateur" required>
+        <input type="password" id="loginPassword" placeholder="Mot de passe" required>
+        <button type="submit">Se connecter</button>
+        <button type="button" id="closeLogin">Fermer</button>
+    </form>
+</div>
+<div class="login-popup" id="signupForm">
+    <form id="formSignup">
+        <h2>Créer un compte</h2>
+        <input type="text" id="signupPrenom" placeholder="Prénom" required>
+        <input type="text" id="signupNom" placeholder="Nom" required>
+        <input type="email" id="signupEmail" placeholder="Email" required>
+        <input type="text" id="signupUsername" placeholder="Nom d'utilisateur" required>
+        <input type="password" id="signupPassword" placeholder="Mot de passe" required>
+        <select id="signupRole">
+            <option value="client">Client</option>
+            <option value="admin">Admin</option>
+        </select>
+        <button type="submit">Créer</button>
+        <button type="button" id="closeSignup">Fermer</button>
+    </form>
+</div>
+
+<!-- Liste membres (admin) -->
+<div id="membersContainer" style="display:none;">
+    <h2>Liste des membres (Admin)</h2>
+    <div id="membersList"></div>
+</div>
+
+<script>
+// --- Gestion utilisateurs ---
+if(!localStorage.getItem("SUPERADMIN")){
+    localStorage.setItem("SUPERADMIN", JSON.stringify({prenom:"Super",nom:"Admin",username:"SUPERADMIN",password:"MASTER",role:"admin"}));
+}
+function getConnectedUser(){ return JSON.parse(localStorage.getItem("connectedUser")); }
+function updateUI(user){
+    const loginBtn=document.getElementById("loginBtn");
+    const logoutBtn=document.getElementById("logoutBtn");
+    const signupBtn=document.getElementById("signupBtn");
+    const membersContainer=document.getElementById("membersContainer");
+    if(user){
+        loginBtn.style.display="none";
+        logoutBtn.style.display="inline-block";
+        signupBtn.style.display=(user.role==="admin")?"inline-block":"none";
+        if(user.role==="admin") displayMembers(); else membersContainer.style.display="none";
+    }else{
+        loginBtn.style.display="inline-block";
+        logoutBtn.style.display="none";
+        signupBtn.style.display="none";
+        membersContainer.style.display="none";
+    }
+}
+
+// --- Popups ---
+document.getElementById("loginBtn").onclick = ()=> document.getElementById("loginForm").style.display="flex";
+document.getElementById("signupBtn").onclick = ()=> document.getElementById("signupForm").style.display="flex";
+document.getElementById("closeLogin").onclick = ()=> document.getElementById("loginForm").style.display="none";
+document.getElementById("closeSignup").onclick = ()=> document.getElementById("signupForm").style.display="none";
+
+// --- Création compte ---
+document.getElementById("formSignup").addEventListener("submit", e=>{
+    e.preventDefault();
+    const prenom=document.getElementById("signupPrenom").value.trim();
+    const nom=document.getElementById("signupNom").value.trim();
+    const email=document.getElementById("signupEmail").value.trim();
+    const username=document.getElementById("signupUsername").value.trim();
+    const password=document.getElementById("signupPassword").value;
+    const role=document.getElementById("signupRole").value;
+    if(localStorage.getItem(username)){ alert("Nom d'utilisateur déjà utilisé !"); return; }
+    localStorage.setItem(username, JSON.stringify({prenom,nom,email,username,password,role}));
+    alert("Compte créé !");
+    document.getElementById("signupForm").style.display="none";
+});
+
+// --- Connexion ---
+document.getElementById("formLogin").addEventListener("submit", e=>{
+    e.preventDefault();
+    const username=document.getElementById("loginUsername").value.trim();
+    const password=document.getElementById("loginPassword").value;
+    const stored=localStorage.getItem(username);
+    if(!stored){ alert("Utilisateur inconnu !"); return; }
+    const user=JSON.parse(stored);
+    if(user.password!==password){ alert("Mot de passe incorrect !"); return; }
+    localStorage.setItem("connectedUser", JSON.stringify(user));
+    document.getElementById("loginForm").style.display="none";
+    updateUI(user);
+});
+
+// --- Déconnexion ---
+document.getElementById("logoutBtn").onclick = ()=>{
+    localStorage.removeItem("connectedUser");
+    updateUI(null);
+};
+
+// --- Liste membres ---
+function displayMembers(){
+    const container=document.getElementById("membersContainer");
+    container.style.display="block";
+    const list=document.getElementById("membersList");
+    list.innerHTML="";
+    for(let i=0;i<localStorage.length;i++){
+        const key=localStorage.key(i);
+        if(key==="connectedUser") continue;
+        const u=JSON.parse(localStorage.getItem(key));
+        if(!u.username) continue;
+        const div=document.createElement("div");
+        div.className="member";
+        div.innerHTML=`${u.prenom} ${u.nom} | ${u.email} | ${u.username} | Rôle: ${u.role} <button onclick="deleteMember('${u.username}')">Supprimer</button>`;
+        list.appendChild(div);
+    }
+}
+function deleteMember(username){ if(confirm("Supprimer cet utilisateur ?")){ localStorage.removeItem(username); displayMembers(); } }
+
+// --- Commentaires + likes ---
+function getComments(){ return JSON.parse(localStorage.getItem("comments")||"[]"); }
+function saveComments(comments){ localStorage.setItem("comments", JSON.stringify(comments)); }
+
+function displayComments(){
+    const commentsList=document.getElementById("commentsList");
+    commentsList.innerHTML="";
+    const comments=getComments();
+    const user=getConnectedUser();
+    comments.forEach((c,i)=>{
+        const div=document.createElement("div"); div.className="comment";
+        div.innerHTML=`<strong>${c.username}</strong>: ${c.text} 
+            <button class="likeBtn" data-index="${i}">👍 ${c.likes}</button> 
+            <button class="replyBtn" data-index="${i}">Répondre</button>`;
+        if(c.replies) c.replies.forEach((r,j)=>{
+            const rDiv=document.createElement("div"); rDiv.className="reply";
+            rDiv.innerHTML=`<strong>${r.username}</strong>: ${r.text} <button class="likeReplyBtn" data-comment="${i}" data-reply="${j}">👍 ${r.likes}</button>`;
+            div.appendChild(rDiv);
+        });
+        commentsList.appendChild(div);
+    });
+    updateCommentLikes();
+}
+function updateCommentLikes(){
+    const comments=getComments();
+    const user=getConnectedUser();
+    document.querySelectorAll(".likeBtn").forEach(btn=>{
+        const idx=btn.dataset.index;
+        btn.textContent=`👍 ${comments[idx].likes}`;
+        if(user && comments[idx].likedBy && comments[idx].likedBy.includes(user.username)) btn.classList.add("liked");
+        else btn.classList.remove("liked");
+    });
+    document.querySelectorAll(".likeReplyBtn").forEach(btn=>{
+        const c=btn.dataset.comment; const r=btn.dataset.reply;
+        btn.textContent=`👍 ${comments[c].replies[r].likes}`;
+        if(user && comments[c].replies[r].likedBy && comments[c].replies[r].likedBy.includes(user.username)) btn.classList.add("liked");
+        else btn.classList.remove("liked");
+    });
+}
+document.querySelector("#commentsList").addEventListener("click", e=>{
+    const btn=e.target.closest(".likeBtn, .likeReplyBtn");
+    if(!btn) return;
+    const comments=getComments();
+    const user=getConnectedUser();
+    if(!user){ alert("Connectez-vous pour liker !"); return; }
+    if(btn.classList.contains("likeBtn")){
+        const idx=btn.dataset.index;
+        comments[idx].likedBy=comments[idx].likedBy||[];
+        if(comments[idx].likedBy.includes(user.username)){ alert("Vous avez déjà liké ce commentaire !"); return; }
+        comments[idx].likes++; comments[idx].likedBy.push(user.username);
+    }else{
+        const c=btn.dataset.comment; const r=btn.dataset.reply;
+        comments[c].replies[r].likedBy=comments[c].replies[r].likedBy||[];
+        if(comments[c].replies[r].likedBy.includes(user.username)){ alert("Vous avez déjà liké cette réponse !"); return; }
+        comments[c].replies[r].likes++; comments[c].replies[r].likedBy.push(user.username);
+    }
+    saveComments(comments); displayComments();
+});
+document.querySelector("#commentsList").addEventListener("click", e=>{
+    const btn=e.target.closest(".replyBtn"); if(!btn) return;
+    const idx=btn.dataset.index;
+    const replyText=prompt("Écrire votre réponse :");
+    const user=getConnectedUser();
+    if(!user){ alert("Connectez-vous pour répondre !"); return; }
+    if(replyText && replyText.trim()!==""){
+        const comments=getComments();
+        comments[idx].replies=comments[idx].replies||[];
+        comments[idx].replies.push({username:user.username,text:replyText.trim(),likes:0,likedBy:[]});
+        saveComments(comments); displayComments();
+    }
+});
+document.getElementById("commentForm").addEventListener("submit", e=>{
+    e.preventDefault();
+    const text=document.getElementById("commentText").value.trim();
+    const user=getConnectedUser();
+    if(!user){ alert("Connectez-vous pour poster !"); return; }
+    if(text==="") return;
+    const comments=getComments();
+    comments.push({username:user.username,text,likes:0,likedBy:[],replies:[]});
+    saveComments(comments);
+    document.getElementById("commentText").value="";
+    displayComments();
+});
+
+// --- Like texte principal ---
+let mainLikes=parseInt(localStorage.getItem("mainLikes")||0);
+let mainLikedUsers=JSON.parse(localStorage.getItem("mainLikedUsers")||"[]");
+const likeMainBtn=document.getElementById("likeMainBtn");
+function updateMainLike(){
+    likeMainBtn.textContent=`👍 ${mainLikes}`;
+    const user=getConnectedUser();
+    if(user && mainLikedUsers.includes(user.username)) likeMainBtn.classList.add("liked");
+    else likeMainBtn.classList.remove("liked");
+}
+likeMainBtn.onclick=()=>{
+    const user=getConnectedUser();
+    if(!user){ alert("Connectez-vous pour liker !"); return; }
+    if(mainLikedUsers.includes(user.username)){ alert("Vous avez déjà liké ce texte !"); return; }
+    mainLikes++; mainLikedUsers.push(user.username);
+    localStorage.setItem("mainLikes",mainLikes); localStorage.setItem("mainLikedUsers",JSON.stringify(mainLikedUsers));
+    updateMainLike();
+};
+
+// --- Initialisation ---
+window.onload=()=>{ updateUI(getConnectedUser()); displayComments(); updateMainLike(); };
+</script>
+</body>
+</html>

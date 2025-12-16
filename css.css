@@ -1,0 +1,253 @@
+/* ==========================
+   Police globale et couleurs
+========================== */
+* {
+    font-family: "Comic Sans MS", cursive, sans-serif !important;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background: linear-gradient(to bottom, #4a66ff, #0a1530);
+    color: white;
+    min-height: 100vh;
+    line-height: 1.6;
+}
+
+/* ==========================
+   Titres et textes
+========================== */
+h1, h2 {
+    text-align: center;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    margin: 20px 0;
+}
+
+h1 { font-size: 80px; }
+h2 { font-size: 50px; }
+
+p {
+    font-size: 22px;
+    color: aliceblue;
+    margin: 20px auto;
+    width: 80%;
+    text-align: justify;
+}
+
+/* ==========================
+   Bannières
+========================== */
+.banniere {
+    width: 100%;
+    background: linear-gradient(to right, #4a66ff, #0a1530);
+    padding: 20px 0;
+    text-align: center;
+}
+
+/* ==========================
+   Menu
+========================== */
+header, .menu-bar {
+    background: #4a66ff;
+    padding: 20px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+header ul, .menu-bar ul {
+    list-style: none;
+    display: flex;
+    justify-content: center;
+    gap: 25px;
+    flex-wrap: wrap;
+    margin: 0;
+    padding: 0;
+}
+
+header li, .menu-bar li { position: relative; }
+
+header a, .menu-bar a { 
+    color: white;
+    text-decoration: none;
+    padding: 15px 30px;
+    display: block;
+    border-radius: 25px;
+    font-size: 22px;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+header a:hover, .menu-bar a:hover { 
+    background: linear-gradient(135deg,#6e82ff,#8aa0ff);
+}
+
+/* Dropdown */
+.dropdown-content { 
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: linear-gradient(#3550ff,#2c3b85);
+    min-width: 220px;
+    border-radius: 12px;
+    overflow: hidden;
+    z-index: 1000;
+}
+
+.dropdown-content a { 
+    padding: 15px 20px;
+    font-size: 18px;
+}
+
+.dropdown:hover .dropdown-content { display: block; }
+
+/* ==========================
+   Boutons
+========================== */
+button, .btn-action, .menu-bar a {
+    cursor: pointer;
+}
+
+button:hover, .btn-action:hover {
+    background: #6e82ff;
+    transform: scale(1.05);
+}
+
+/* ==========================
+   Popups
+========================== */
+.login-popup, .popup {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.7);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.login-popup form, .popup form {
+    background: linear-gradient(to bottom, #4a66ff, #0a1530);
+    padding: 30px;
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    color: white;
+    width: 400px;
+    box-shadow: 0 0 20px #4a66ff;
+}
+
+.login-popup input, .login-popup select, .login-popup textarea,
+.popup input, .popup select, .popup textarea {
+    padding: 10px;
+    border-radius: 10px;
+    border: none;
+    font-size: 16px;
+}
+
+.login-popup button, .popup button {
+    padding: 10px;
+    border-radius: 10px;
+    border: none;
+    background: #4a66ff;
+    color: white;
+    font-weight: bold;
+}
+
+/* ==========================
+   Profil
+========================== */
+.profile-container {
+    max-width: 600px;
+    margin: 50px auto;
+    background: #0f1a3a;
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 0 25px #4a66ff;
+    text-align: center;
+}
+
+.profile-container img {
+    width: 30%;
+    max-width: 150px;
+    aspect-ratio: 1/1;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid #4a66ff;
+    display: block;
+    margin: 0 auto 20px;
+}
+
+/* ==========================
+   Liste membres
+========================== */
+#membersContainer, #commentSection {
+    width: 80%;
+    margin: 20px auto;
+}
+
+/* ==========================
+   Responsive
+========================== */
+@media (max-width: 1200px) {
+    h1 { font-size: 70px; }
+    h2 { font-size: 45px; }
+}
+
+@media (max-width: 900px) {
+    header ul, .menu-bar ul { flex-direction: column; gap: 15px; align-items: center; }
+    header a, .menu-bar a { font-size: 20px; padding: 12px 25px; }
+}
+
+@media (max-width: 500px) {
+    h1 { font-size: 50px; }
+    h2 { font-size: 35px; }
+    p { font-size: 18px; width: 90%; }
+    .profile-container img { width: 120px; height: 120px; }
+    button, .btn-action { font-size: 16px; padding: 10px 15px; }
+}
+
+#menuAdmin,
+#profilBtn,
+#deleteAccountBtn,
+#logoutBtn {
+    display:none;
+}
+
+#siteBlocker{
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.95);
+    z-index: 99999;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.blocker-content{
+    background: #0f1a3a;
+    padding: 50px;
+    border-radius: 25px;
+    box-shadow: 0 0 40px #4a66ff;
+}
+
+.blocker-content h1{
+    font-size: 40px;
+    margin-bottom: 20px;
+}
+
+.blocker-content button{
+    margin: 15px;
+    padding: 15px 30px;
+    border: none;
+    border-radius: 20px;
+    background: #4a66ff;
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+}
