@@ -2,48 +2,73 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BAC PRO CIEL - Menu déroulant</title>
+<!-- Police Comic Sans web pour compatibilité mobile -->
+<link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet">
 <style>
-* { font-family: "Comic Neue", "Kristen ITC", "Chalkboard SE", sans-serif; margin:0; padding:0; box-sizing:border-box; }
+* { font-family: 'Comic Neue', cursive, sans-serif !important; margin:0; padding:0; box-sizing:border-box; }
 body { background: linear-gradient(#a6d6f7, #5c69d6, #0a1530); color:#fff; min-height:100vh; }
-h1 { text-align:center; margin:50px 0 20px; font-size:100px; letter-spacing:5px; }
-h2 { text-align:center; margin:10px 0 40px; font-size:50px; }
+h1 { text-align:center; margin:50px 0 20px; font-size:6vw; letter-spacing:5px; }
+h2 { text-align:center; margin:10px 0 40px; font-size:4vw; }
 
 /* Menu déroulant */
-.menu-bar { background:#4a66ff; padding:20px; box-shadow:0 5px 15px rgba(0,0,0,0.3); }
-.menu-bar ul { list-style:none; display:flex; gap:25px; flex-wrap:wrap; justify-content:center; }
+.menu-bar { background:#4a66ff; padding:15px 10px; box-shadow:0 5px 15px rgba(0,0,0,0.3); }
+.menu-bar ul { list-style:none; display:flex; gap:15px; flex-wrap:wrap; justify-content:center; }
 .menu-bar li { position:relative; }
-.menu-bar a { color:white; text-decoration:none; padding:15px 30px; display:block; border-radius:25px; font-size:18px; font-weight:bold; transition:0.3s; box-shadow:0 3px 8px rgba(0,0,0,0.2);}
+.menu-bar a { color:white; text-decoration:none; padding:10px 20px; display:block; border-radius:20px; font-size:16px; font-weight:bold; transition:0.3s; box-shadow:0 3px 8px rgba(0,0,0,0.2);}
 .menu-bar a:hover { background:linear-gradient(135deg,#6e82ff,#8aa0ff); box-shadow:0 5px 15px rgba(0,0,0,0.3);}
-.dropdown-content { display:none; position:absolute; top:100%; left:0; background:linear-gradient(#3550ff,#2c3b85); min-width:220px; border-radius:12px; overflow:hidden; z-index:1000; box-shadow:0 5px 15px rgba(0,0,0,0.5);}
-.dropdown-content a { padding:15px 20px; font-size:17px; }
+.dropdown-content { display:none; position:absolute; top:100%; left:0; background:linear-gradient(#3550ff,#2c3b85); min-width:180px; border-radius:12px; overflow:hidden; z-index:1000; box-shadow:0 5px 15px rgba(0,0,0,0.5);}
+.dropdown-content a { padding:10px 15px; font-size:15px; }
 .dropdown:hover .dropdown-content { display:block; }
 .menu-bar li.dropdown:hover > a { background:linear-gradient(135deg,#6e82ff,#8aa0ff); }
 
 /* Boutons Compte/Admin */
-#profilBtn, #deleteAccountBtn, #logoutBtn, #adminLink { display:none; font-size:18px; }
-#userDisplay { text-align:center; font-size:28px; margin-top:25px; font-weight:bold; }
+#profilBtn, #deleteAccountBtn, #logoutBtn, #adminLink { display:none; font-size:16px; }
+#userDisplay { text-align:center; font-size:18px; margin-top:15px; font-weight:bold; }
 
 /* PC animé */
-.pc-image { width:800px; max-width:90%; display:block; margin:40px auto; animation: glow 2s infinite alternate; }
+.pc-image { width:80%; max-width:800px; display:block; margin:30px auto; animation: glow 2s infinite alternate; }
 @keyframes glow {
-    0% { filter: drop-shadow(0 0 40px #b266ff) drop-shadow(0 0 80px #8f33ff) drop-shadow(0 0 140px #c266ff);}
-    50% { filter: drop-shadow(0 0 80px #b266ff) drop-shadow(0 0 120px #8f33ff) drop-shadow(0 0 200px #c266ff);}
-    100% { filter: drop-shadow(0 0 40px #b266ff) drop-shadow(0 0 80px #8f33ff) drop-shadow(0 0 140px #c266ff);}
+  0% { filter: drop-shadow(0 0 20px #b266ff) drop-shadow(0 0 40px #8f33ff) drop-shadow(0 0 70px #c266ff);}
+  50% { filter: drop-shadow(0 0 40px #b266ff) drop-shadow(0 0 60px #8f33ff) drop-shadow(0 0 120px #c266ff);}
+  100% { filter: drop-shadow(0 0 20px #b266ff) drop-shadow(0 0 40px #8f33ff) drop-shadow(0 0 70px #c266ff);}
 }
 
 /* Popups */
 .login-popup { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); justify-content:center; align-items:center; z-index:10000; }
-.login-popup form { background:#0f1a3a; padding:40px; border-radius:25px; width:450px; display:flex; flex-direction:column; gap:20px; box-shadow:0 0 35px #4a66ff; }
-.login-popup input { padding:15px; border-radius:20px; border:none; font-size:18px; }
+.login-popup form { 
+    background:#0f1a3a; 
+    padding:20px 25px;
+    border-radius:25px; 
+    width:90%; 
+    max-width:450px; 
+    max-height:80vh;
+    overflow-y:auto;
+    display:flex; 
+    flex-direction:column; 
+    gap:10px;
+    box-shadow:0 0 35px #4a66ff; 
+}
+.login-popup input { 
+    padding:10px 12px; 
+    border-radius:16px; 
+    border:none; 
+    font-size:16px; 
+}
 .password-box { display:flex; align-items:center; gap:10px; }
-.password-box button { background:#4a66ff; border:none; border-radius:20px; padding:12px; cursor:pointer; color:white; font-weight:bold; }
-.login-popup button.submit { background:#6e82ff; color:white; border:none; padding:15px; border-radius:25px; font-size:18px; cursor:pointer; transition:0.3s; }
+.password-box button { background:#4a66ff; border:none; border-radius:20px; padding:10px; cursor:pointer; color:white; font-weight:bold; }
+.login-popup button.submit { background:#6e82ff; color:white; border:none; padding:12px; border-radius:25px; font-size:16px; cursor:pointer; transition:0.3s; }
 .login-popup button.submit:hover { background:#8aa0ff; }
-.login-popup button.close { background:#2c3b85; color:white; border:none; padding:12px; border-radius:25px; cursor:pointer; font-size:16px; }
+.login-popup button.close { background:#2c3b85; color:white; border:none; padding:10px; border-radius:25px; cursor:pointer; font-size:14px; }
 
-/* Texte responsive */
-#deviceDisplay { text-align:center; font-size:30px; margin-top:20px; font-weight:bold; }
+/* Responsive menu mobile */
+@media(max-width:600px){
+    .menu-bar ul { flex-direction:column; align-items:center; gap:10px; }
+    .menu-bar a { padding:8px 15px; font-size:14px; }
+    h1 { font-size:8vw; }
+    h2 { font-size:5vw; }
+}
 </style>
 </head>
 <body>
@@ -59,7 +84,7 @@ h2 { text-align:center; margin:10px 0 40px; font-size:50px; }
         </div>
     </li>
     <li class="dropdown">
-        <a href="profil.html">Compte</a>
+        <a href="#">Compte</a>
         <div class="dropdown-content">
             <a href="#" id="signupBtn">Créer un compte</a>
             <a href="#" id="loginBtn">Connexion</a>
@@ -75,7 +100,7 @@ h2 { text-align:center; margin:10px 0 40px; font-size:50px; }
         </div>
     </li>
     <li class="dropdown">
-        <a href="#">information</a>
+        <a href="#">Information</a>
         <div class="dropdown-content">
             <a href="actualité.html">Cybersécurité</a>
         </div>
@@ -87,9 +112,8 @@ h2 { text-align:center; margin:10px 0 40px; font-size:50px; }
 <h2>Tout ce que tu dois savoir sur le Bac Pro CIEL</h2>
 <div id="userDisplay"></div>
 <img src="Design_sans_titre-removebg-preview.png" class="pc-image" alt="PC">
-<div id="deviceDisplay"></div>
 
-<!-- Popups Connexion -->
+<!-- Popup Connexion -->
 <div class="login-popup" id="loginForm">
 <form id="formLogin">
 <h2>Connexion</h2>
@@ -103,7 +127,7 @@ h2 { text-align:center; margin:10px 0 40px; font-size:50px; }
 </form>
 </div>
 
-<!-- Popups Inscription -->
+<!-- Popup Inscription -->
 <div class="login-popup" id="signupForm">
 <form id="formSignup">
 <h2>Créer un compte</h2>
@@ -122,7 +146,7 @@ h2 { text-align:center; margin:10px 0 40px; font-size:50px; }
 </div>
 
 <script>
-/* --- SUPERADMIN invincible --- */
+// SUPERADMIN
 if(!localStorage.getItem("SUPERADMIN")){
     localStorage.setItem("SUPERADMIN", JSON.stringify({
         prenom:"Super", nom:"Admin", username:"SUPERADMIN", password:"MASTER",
@@ -130,11 +154,11 @@ if(!localStorage.getItem("SUPERADMIN")){
     }));
 }
 
-/* --- Utilisateur connecté --- */
+// Utilisateur connecté
 function getConnected(){ return JSON.parse(localStorage.getItem("connectedUser")); }
 function afficherUtilisateur(user){
     loginBtn.style.display='none';
-    signupBtn.style.display='inline-block';
+    signupBtn.style.display='inline-block'; // peut créer compte
     profilBtn.style.display='inline-block';
     deleteAccountBtn.style.display='inline-block';
     logoutBtn.style.display='inline-block';
@@ -142,13 +166,13 @@ function afficherUtilisateur(user){
     userDisplay.textContent = `Bienvenue, ${user.prenom} ${user.nom} (${user.role})`;
 }
 
-/* --- Toggle mot de passe --- */
+// Toggle mot de passe
 function togglePassword(id){
     const input=document.getElementById(id);
     input.type = input.type==='password'?'text':'password';
 }
 
-/* --- Connexion --- */
+// Connexion
 document.getElementById('formLogin').addEventListener('submit', e=>{
     e.preventDefault();
     const username=loginUsername.value;
@@ -164,9 +188,8 @@ document.getElementById('formLogin').addEventListener('submit', e=>{
     loginForm.style.display='none';
 });
 
-/* --- Création compte --- */
-signupBtn.onclick=()=> signupForm.style.display='flex';
-
+// Création compte
+signupBtn.onclick = () => { signupForm.style.display = 'flex'; };
 document.getElementById('formSignup').addEventListener('submit', e=>{
     e.preventDefault();
     const user={
@@ -180,7 +203,7 @@ document.getElementById('formSignup').addEventListener('submit', e=>{
     signupForm.style.display='none';
 });
 
-/* --- Gestion profil / suppression / déconnexion --- */
+// Gestion profil / suppression / déconnexion
 profilBtn.onclick=()=>window.location.href="profil.html";
 deleteAccountBtn.onclick=()=>{
     if(confirm("Supprimer le compte ?")){
@@ -193,29 +216,14 @@ deleteAccountBtn.onclick=()=>{
 };
 logoutBtn.onclick=()=>{ sessionStorage.removeItem('loggedUser'); location.reload(); };
 
-/* --- Vérification session au chargement --- */
+// Vérification session
 window.onload=()=>{
     const u=sessionStorage.getItem('loggedUser');
     if(u){ const user=JSON.parse(localStorage.getItem(u)); afficherUtilisateur(user); }
 };
 
-/* --- Affichage popups --- */
+// Popup Connexion
 loginBtn.onclick=()=>loginForm.style.display='flex';
-
-/* --- Texte responsive --- */
-function displayDeviceText() {
-    const display = document.getElementById("deviceDisplay");
-    const w = window.innerWidth;
-    if(w <= 600){
-        display.textContent = "à tatat (Téléphone)";
-    } else if(w <= 1024){
-        display.textContent = "à tatat (Tablette)";
-    } else {
-        display.textContent = "à tatata (PC)";
-    }
-}
-window.addEventListener("load", displayDeviceText);
-window.addEventListener("resize", displayDeviceText);
 </script>
 
 </body>
