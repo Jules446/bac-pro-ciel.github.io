@@ -165,29 +165,38 @@ h2 { text-align:center; font-size:50px; margin:30px 0 20px 0; }
 <body>
 
 <header class="menu-bar">
-  <ul>
+<ul>
     <li class="dropdown">
-      <a href="index.html">Menu</a>
-      <div class="dropdown-content">
-        <a href="Cybersécurité.html">Cybersécurité</a>
-        <a href="informatique.html">Informatique</a>
-        <a href="éléctronique.html">Électronique</a>
-      </div>
+        <a href="#">Présentation</a>
+        <div class="dropdown-content">
+            <a href="Cybersécurité.html">Cybersécurité</a>
+            <a href="informatique.html">Informatique</a>
+            <a href="éléctronique.html">Électronique</a>
+        </div>
     </li>
     <li class="dropdown">
-      <a href="profil.html">Compte</a>
-      <div class="dropdown-content">
-        <a href="#" id="signupBtn">Créer un compte</a>
-        <a href="#" id="loginBtn">Connexion</a>
-        <a href="#" id="logoutBtn" style="display:none;">Déconnexion</a>
-      </div>
+        <a href="#">Compte</a>
+        <div class="dropdown-content">
+            <a href="#" id="signupBtn">Créer un compte</a>
+            <a href="#" id="loginBtn">Connexion</a>
+            <a href="profil.html" id="profilBtn">Profil</a>
+            <a href="#" id="deleteAccountBtn">Supprimer mon compte</a>
+            <a href="#" id="logoutBtn">Déconnexion</a>
+        </div>
     </li>
     <li class="dropdown">
-        <a href="#">information</a>
+        <a href="#" id="adminLink">Admin</a>
+        <div class="dropdown-content">
+            <a href="gestionnair des membre.html">Gestion des membres</a>
+        </div>
+    </li>
+    <li class="dropdown">
+        <a href="#">Information</a>
         <div class="dropdown-content">
             <a href="actualité.html">Cybersécurité</a>
+        </div>
     </li>
-  </ul>
+</ul>
 </header>
 
 <!-- Contenu principal -->
@@ -441,6 +450,7 @@ window.onload=()=>{ updateUI(getConnectedUser()); displayComments(); updateMainL
 </script>
 </body>
 </html>
+
 
 
 
