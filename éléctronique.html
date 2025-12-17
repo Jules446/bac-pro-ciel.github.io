@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+ <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <meta charset="UTF-8">
 <title>Cybersécurité - BAC PRO CIEL</title>
 <style>
 /* --- Général --- */
 body {
-    font-family: "Comic Neue", "Kristen ITC", "Chalkboard SE", sans-serif;
+ font-family: "Comic Neue", "Kristen ITC", "Chalkboard SE", sans-serif; 
     background: linear-gradient(#a6d6f7, #5c69d6, #0a1530);
     color: white;
     margin:0;
@@ -192,19 +192,15 @@ h2 { text-align:center; font-size:50px; margin:30px 0 20px 0; }
 
 <!-- Contenu principal -->
 <h1>BAC PRO CIEL</h1>
-<h2>Le Bac Pro CIEL en électronique</h2>
+<h2>Le Bac Pro CIEL en Cybersécurité</h2>
 <div id="mainText">
-    <p> Le Bac Professionnel CIEL permet aux élèves de développer des compétences approfondies en électronique.<br>
-Ils apprennent à analyser et comprendre le fonctionnement des circuits électriques et électroniques.<br>
-Ils découvrent et manipulent les composants essentiels tels que les résistances, condensateurs, diodes, transistors et microcontrôleurs.<br>
-Ils sont formés à concevoir, monter, tester et dépanner des circuits électroniques complexes.<br>
-Les élèves apprennent également à utiliser des outils de mesure comme les multimètres, oscilloscopes et générateurs de signal.<br>
-Ils sont capables de diagnostiquer des pannes, de proposer des solutions adaptées et de réaliser des réparations sur des systèmes embarqués.<br>
-Cette formation permet de travailler sur des appareils électroménagers, des systèmes de communication, des robots ou d’autres dispositifs électroniques.<br>
-Les projets pratiques permettent de mettre en application la théorie et de développer l’autonomie, la rigueur et la logique technique.<br>
-À travers ces compétences, les élèves se préparent à des métiers tels que technicien en électronique, intégrateur de systèmes ou dépanneur de matériels électroniques.<br>
-</p>
-<button id="likeMainBtn">👍 0</button>
+    Le programme d’informatique du Bac Pro CIEL offre aux élèves une immersion complète dans le monde numérique et technologique. 
+    Les élèves apprennent à installer, configurer et dépanner différents types d’ordinateurs et périphériques, à comprendre le fonctionnement des systèmes d’exploitation, et à gérer les réseaux locaux et étendus. 
+    Ils acquièrent également des compétences dans la maintenance matérielle et logicielle.<br>
+    Une part importante du programme est dédiée au développement d’applications simples et à la programmation. 
+    Ils découvrent les langages informatiques de base, les structures de données, et l’écriture de scripts pour automatiser certaines tâches.<br>
+    Au-delà des aspects techniques, le Bac Pro CIEL forme les élèves à la méthodologie de projet et au travail en équipe, des compétences indispensables dans le domaine professionnel.
+    <button id="likeMainBtn">👍 0</button>
 </div>
 
 <!-- Section Commentaires -->
@@ -251,9 +247,9 @@ Les projets pratiques permettent de mettre en application la théorie et de dév
 </div>
 
 <script>
-const supabaseUrl = "https://TON-PROJET.supabase.co";
+ const supabaseUrl = "https://TON-PROJET.supabase.co";
 const supabaseKey = "VOTRE-ANON-KEY"; // clé publique
-const supabase = supabase.createClient(supabaseUrl, supabaseKey);        
+const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 // --- Gestion utilisateurs ---
 if(!localStorage.getItem("SUPERADMIN")){
     localStorage.setItem("SUPERADMIN", JSON.stringify({prenom:"Super",nom:"Admin",username:"SUPERADMIN",password:"MASTER",role:"admin"}));
@@ -445,6 +441,7 @@ window.onload=()=>{ updateUI(getConnectedUser()); displayComments(); updateMainL
 </script>
 </body>
 </html>
+
 
 
 
