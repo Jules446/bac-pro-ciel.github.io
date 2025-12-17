@@ -87,6 +87,9 @@ h2 { text-align:center; font-size:50px; margin:30px 0 20px 0; }
  align-items:center;
  z-index:1000;
 }
+.login-popup.active {
+ display:flex;
+}
 .login-popup form {
  background:#1a1a2e;
  padding:40px;
@@ -223,11 +226,11 @@ h2 { text-align:center; font-size:50px; margin:30px 0 20px 0; }
 <h1>BAC PRO CIEL</h1>
 <h2>Le Bac Pro CIEL en Cybersécurité</h2>
 <div id="mainText">
-    Le programme d’informatique du Bac Pro CIEL offre aux élèves une immersion complète dans le monde numérique et technologique. 
-    Les élèves apprennent à installer, configurer et dépanner différents types d’ordinateurs et périphériques, à comprendre le fonctionnement des systèmes d’exploitation, et à gérer les réseaux locaux et étendus. 
+    Le programme d'informatique du Bac Pro CIEL offre aux élèves une immersion complète dans le monde numérique et technologique. 
+    Les élèves apprennent à installer, configurer et dépanner différents types d'ordinateurs et périphériques, à comprendre le fonctionnement des systèmes d'exploitation, et à gérer les réseaux locaux et étendus. 
     Ils acquièrent également des compétences dans la maintenance matérielle et logicielle.<br>
-    Une part importante du programme est dédiée au développement d’applications simples et à la programmation. 
-    Ils découvrent les langages informatiques de base, les structures de données, et l’écriture de scripts pour automatiser certaines tâches.<br>
+    Une part importante du programme est dédiée au développement d'applications simples et à la programmation. 
+    Ils découvrent les langages informatiques de base, les structures de données, et l'écriture de scripts pour automatiser certaines tâches.<br>
     Au-delà des aspects techniques, le Bac Pro CIEL forme les élèves à la méthodologie de projet et au travail en équipe, des compétences indispensables dans le domaine professionnel.
     <button id="likeMainBtn">👍 0</button>
 </div>
@@ -249,9 +252,61 @@ h2 { text-align:center; font-size:50px; margin:30px 0 20px 0; }
 </div>
 
 <script>
-// --- Ton JS original ---
-// Supabase et gestion utilisateurs, popups, création/connexion/déconnexion, commentaires et likes
-// Pas besoin de changer, il fonctionnera avec ce HTML propre
+// ==========================================
+// Gestion des popups de connexion et création de compte
+// ==========================================
+
+// Récupération des éléments
+const loginBtn = document.getElementById('loginBtn');
+const signupBtn = document.getElementById('signupBtn');
+const logoutBtn = document.getElementById('logoutBtn');
+const closeLogin = document.getElementById('closeLogin');
+const closeSignup = document.getElementById('closeSignup');
+const loginForm = document.getElementById('loginForm');
+const signupForm = document.getElementById('signupForm');
+
+// Ouvrir la popup de connexion
+loginBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    loginForm.classList.add('active');
+    signupForm.classList.remove('active');
+});
+
+// Ouvrir la popup de création de compte
+signupBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    signupForm.classList.add('active');
+    loginForm.classList.remove('active');
+});
+
+// Fermer la popup de connexion
+closeLogin.addEventListener('click', () => {
+    loginForm.classList.remove('active');
+});
+
+// Fermer la popup de création de compte
+closeSignup.addEventListener('click', () => {
+    signupForm.classList.remove('active');
+});
+
+// Fermer les popups en cliquant sur l'arrière-plan
+loginForm.addEventListener('click', (e) => {
+    if (e.target === loginForm) {
+        loginForm.classList.remove('active');
+    }
+});
+
+signupForm.addEventListener('click', (e) => {
+    if (e.target === signupForm) {
+        signupForm.classList.remove('active');
+    }
+});
+
+// ==========================================
+// Votre code JavaScript existant pour Supabase,
+// la gestion des utilisateurs, commentaires, etc.
+// À ajouter ici...
+// ==========================================
 </script>
 
 </body>
