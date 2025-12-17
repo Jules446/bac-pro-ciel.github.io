@@ -200,6 +200,7 @@ window.addEventListener('load', ()=>{
         showLoginPopup();
     }
 });
+
 // --- Likes texte principal ---
 const likeBtn = document.getElementById("likeMainText");
 const mainTextLikesSpan = document.getElementById("mainTextLikes");
