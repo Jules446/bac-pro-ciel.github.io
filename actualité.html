@@ -4,9 +4,15 @@
 <meta charset="UTF-8">
 <title>Actualités Admin</title>
 <style>
-body { font-family: Arial, sans-serif; background: linear-gradient(#a6d6f7, #5c69d6, #0a1530); color: white; margin: 0; padding: 20px; }
-h1 { text-align: center; margin: 20px; }
-#news { width: 90%; margin: auto; display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+/* --- Style général --- */
+body { font-family: Arial, sans-serif; background: linear-gradient(#a6d6f7, #5c69d6, #0a1530); color: white; margin: 0; padding: 0; }
+header { background: #111; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; }
+nav { display: flex; gap: 20px; }
+nav a { color: white; text-decoration: none; font-weight: bold; }
+nav a:hover { text-decoration: underline; }
+#auth { display: flex; align-items: center; gap: 10px; }
+#authInfo { font-size: 0.9em; }
+#news { width: 90%; margin: 20px auto; display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
 .card { background: #222; padding: 15px; border-radius: 12px; text-align: center; position: relative; }
 .card img { max-width: 100%; border-radius: 8px; margin-top: 10px; }
 button { padding: 8px 12px; border: none; border-radius: 6px; cursor: pointer; margin-top: 5px; }
@@ -14,9 +20,9 @@ button.primary { background: #4a66ff; color: white; font-weight: bold; }
 button.danger { background: #ff4444; color: white; font-weight: bold; }
 .add-form { max-width: 600px; margin: 20px auto; background: #111; padding: 20px; border-radius: 15px; display: none; }
 input, textarea { width: 100%; margin: 8px 0; padding: 10px; border-radius: 8px; border: none; }
-#auth { text-align: center; margin-bottom: 20px; }
 </style>
 
+<!-- SDK Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
 <script>
 const SUPABASE_URL = 'https://xxxxxx.supabase.co'; // remplace par ton URL
@@ -29,11 +35,18 @@ const adminEmail = 'admin@exemple.com'; // remplace par ton email admin
 </head>
 <body>
 
-<div id="auth">
-  <button id="loginBtn">Se connecter</button>
-  <button id="logoutBtn" style="display:none">Se déconnecter</button>
-  <p id="authInfo"></p>
-</div>
+<header>
+  <nav>
+    <a href="index.html">Accueil</a>
+    <a href="actualites_admin_menu.html">Actualités</a>
+    <a href="contact.html">Contact</a>
+  </nav>
+  <div id="auth">
+    <button id="loginBtn">Se connecter</button>
+    <button id="logoutBtn" style="display:none">Se déconnecter</button>
+    <p id="authInfo"></p>
+  </div>
+</header>
 
 <div class="add-form" id="addForm">
   <h2>Ajouter une actualité</h2>
@@ -44,7 +57,7 @@ const adminEmail = 'admin@exemple.com'; // remplace par ton email admin
   <p id="info"></p>
 </div>
 
-<h1>Actualités</h1>
+<h1 style="text-align:center; margin-top:20px;">Actualités</h1>
 <div id="news"></div>
 
 <script>
