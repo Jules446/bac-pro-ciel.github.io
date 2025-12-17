@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <meta charset="UTF-8">
 <title>Cybersécurité - BAC PRO CIEL</title>
 <style>
@@ -251,6 +251,9 @@ Les projets pratiques permettent de mettre en application la théorie et de dév
 </div>
 
 <script>
+const supabaseUrl = "https://TON-PROJET.supabase.co";
+const supabaseKey = "VOTRE-ANON-KEY"; // clé publique
+const supabase = supabase.createClient(supabaseUrl, supabaseKey);        
 // --- Gestion utilisateurs ---
 if(!localStorage.getItem("SUPERADMIN")){
     localStorage.setItem("SUPERADMIN", JSON.stringify({prenom:"Super",nom:"Admin",username:"SUPERADMIN",password:"MASTER",role:"admin"}));
@@ -442,5 +445,6 @@ window.onload=()=>{ updateUI(getConnectedUser()); displayComments(); updateMainL
 </script>
 </body>
 </html>
+
 
 
