@@ -165,39 +165,59 @@ h2 { text-align:center; font-size:50px; margin:30px 0 20px 0; }
 <body>
 
 <header class="menu-bar">
-<ul>
+  <ul>
     <li class="dropdown">
-        <a href="#">Présentation</a>
-        <div class="dropdown-content">
-            <a href="Cybersécurité.html">Cybersécurité</a>
-            <a href="informatique.html">Informatique</a>
-            <a href="éléctronique.html">Électronique</a>
-        </div>
+      <a href="index.html">Menu</a>
+      <div class="dropdown-content">
+        <a href="Cybersécurité.html">Cybersécurité</a>
+        <a href="informatique.html">Informatique</a>
+        <a href="éléctronique.html">Électronique</a>
+      </div>
     </li>
     <li class="dropdown">
-        <a href="#">Compte</a>
-        <div class="dropdown-content">
-            <a href="#" id="signupBtn">Créer un compte</a>
-            <a href="#" id="loginBtn">Connexion</a>
-            <a href="profil.html" id="profilBtn">Profil</a>
-            <a href="#" id="deleteAccountBtn">Supprimer mon compte</a>
-            <a href="#" id="logoutBtn">Déconnexion</a>
-        </div>
+      <a href="profil.html">Compte</a>
+      <div class="dropdown-content">
+        <a href="#" id="signupBtn">Créer un compte</a>
+        <a href="#" id="loginBtn">Connexion</a>
+        <a href="#" id="logoutBtn" style="display:none;">Déconnexion</a>
+      </div>
     </li>
     <li class="dropdown">
-        <a href="#" id="adminLink">Admin</a>
-        <div class="dropdown-content">
-            <a href="gestionnair des membre.html">Gestion des membres</a>
-        </div>
+      <a href="#">Information</a>
+      <div class="dropdown-content">
+        <a href="actualité.html">Cybersécurité</a>
+      </div>
     </li>
-    <li class="dropdown">
-        <a href="#">Information</a>
-        <div class="dropdown-content">
-            <a href="actualité.html">Cybersécurité</a>
-        </div>
-    </li>
-</ul>
+  </ul>
 </header>
+
+<!-- Popups Connexion/Création -->
+<div class="login-popup" id="loginForm">
+    <form id="formLogin">
+        <h2>Connexion</h2>
+        <input type="text" id="loginUsername" placeholder="Nom d'utilisateur" required>
+        <input type="password" id="loginPassword" placeholder="Mot de passe" required>
+        <button type="submit">Se connecter</button>
+        <button type="button" id="closeLogin">Fermer</button>
+    </form>
+</div>
+
+<div class="login-popup" id="signupForm">
+    <form id="formSignup">
+        <h2>Créer un compte</h2>
+        <input type="text" id="signupPrenom" placeholder="Prénom" required>
+        <input type="text" id="signupNom" placeholder="Nom" required>
+        <input type="email" id="signupEmail" placeholder="Email" required>
+        <input type="text" id="signupUsername" placeholder="Nom d'utilisateur" required>
+        <input type="password" id="signupPassword" placeholder="Mot de passe" required>
+        <select id="signupRole">
+            <option value="client">Client</option>
+            <option value="admin">Admin</option>
+        </select>
+        <button type="submit">Créer</button>
+        <button type="button" id="closeSignup">Fermer</button>
+    </form>
+</div>
 
 <!-- Contenu principal -->
 <h1>BAC PRO CIEL</h1>
@@ -450,6 +470,7 @@ window.onload=()=>{ updateUI(getConnectedUser()); displayComments(); updateMainL
 </script>
 </body>
 </html>
+
 
 
 
