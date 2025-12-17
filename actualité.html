@@ -2,28 +2,87 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Actualités</title>
+<title>Actualités Admin</title>
 <style>
-body { font-family: Arial, sans-serif; background: linear-gradient(#a6d6f7, #5c69d6, #0a1530); color: white; margin: 0; }
+body { font-family: Arial, sans-serif; background: linear-gradient(#a6d6f7, #5c69d6, #0a1530); color: white; margin: 0; padding: 20px; }
 h1 { text-align: center; margin: 20px; }
 #news { width: 90%; margin: auto; display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
-.card { background: #222; padding: 15px; border-radius: 12px; text-align: center; }
+.card { background: #222; padding: 15px; border-radius: 12px; text-align: center; position: relative; }
 .card img { max-width: 100%; border-radius: 8px; margin-top: 10px; }
+button { padding: 8px 12px; border: none; border-radius: 6px; cursor: pointer; margin-top: 5px; }
+button.primary { background: #4a66ff; color: white; font-weight: bold; }
+button.danger { background: #ff4444; color: white; font-weight: bold; }
+.add-form { max-width: 600px; margin: 20px auto; background: #111; padding: 20px; border-radius: 15px; display: none; }
+input, textarea { width: 100%; margin: 8px 0; padding: 10px; border-radius: 8px; border: none; }
+#auth { text-align: center; margin-bottom: 20px; }
 </style>
 
-<!-- SDK Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
 <script>
-  const SUPABASE_URL = 'https://xxxxxx.supabase.co'; // Remplace par ton URL
-  const SUPABASE_KEY = 'public-anon-key';           // Remplace par ta clé publique
-  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const SUPABASE_URL = 'https://xxxxxx.supabase.co'; // remplace par ton URL
+const SUPABASE_KEY = 'public-anon-key';           // remplace par ta clé publique
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let currentUser = null;
+const adminEmail = 'admin@exemple.com'; // remplace par ton email admin
 </script>
 </head>
 <body>
+
+<div id="auth">
+  <button id="loginBtn">Se connecter</button>
+  <button id="logoutBtn" style="display:none">Se déconnecter</button>
+  <p id="authInfo"></p>
+</div>
+
+<div class="add-form" id="addForm">
+  <h2>Ajouter une actualité</h2>
+  <input id="title" placeholder="Titre">
+  <textarea id="desc" placeholder="Description"></textarea>
+  <input id="img" placeholder="URL image (optionnel)">
+  <button class="primary" onclick="addNews()">Enregistrer</button>
+  <p id="info"></p>
+</div>
+
 <h1>Actualités</h1>
 <div id="news"></div>
 
 <script>
+// --- AUTHENTIFICATION ---
+const loginBtn = document.getElementById('loginBtn');
+const logoutBtn = document.getElementById('logoutBtn');
+const authInfo = document.getElementById('authInfo');
+const addForm = document.getElementById('addForm');
+
+loginBtn.onclick = async () => {
+  const { data, error } = await supabase.auth.signInWithOAuth({ provider: 'google' });
+  if(error) authInfo.textContent = 'Erreur : '+error.message;
+};
+
+logoutBtn.onclick = async () => {
+  await supabase.auth.signOut();
+  location.reload();
+};
+
+supabase.auth.onAuthStateChange((event, session) => {
+  if(session?.user){
+    currentUser = session.user;
+    authInfo.textContent = `Connecté : ${currentUser.email}`;
+    loginBtn.style.display = 'none';
+    logoutBtn.style.display = 'inline-block';
+    if(currentUser.email === adminEmail){
+      addForm.style.display = 'block';
+    }
+  } else {
+    currentUser = null;
+    authInfo.textContent = 'Non connecté';
+    loginBtn.style.display = 'inline-block';
+    logoutBtn.style.display = 'none';
+    addForm.style.display = 'none';
+  }
+});
+
+// --- CHARGEMENT DES ACTUALITÉS ---
 const container = document.getElementById('news');
 
 async function loadNews() {
@@ -32,23 +91,60 @@ async function loadNews() {
     .select('*')
     .order('created_at', { ascending: false });
 
-  if (error) {
+  container.innerHTML = '';
+  if(error){
     container.innerHTML = `<p style="grid-column:1/3;text-align:center">Erreur : ${error.message}</p>`;
     return;
   }
-
-  if (data.length === 0) {
+  if(data.length === 0){
     container.innerHTML = '<p style="grid-column:1/3;text-align:center">Aucune actualité pour le moment.</p>';
-  } else {
-    data.forEach(n => {
-      const d = document.createElement('div');
-      d.className = 'card';
-      d.innerHTML = `<h3>${n.title}</h3><p>${n.description}</p>${n.image ? `<img src="${n.image}">` : ''}`;
-      container.appendChild(d);
-    });
+    return;
+  }
+
+  data.forEach(n => {
+    const d = document.createElement('div');
+    d.className = 'card';
+    d.innerHTML = `<h3>${n.title}</h3><p>${n.description}</p>${n.image ? `<img src="${n.image}">` : ''}`;
+    if(currentUser?.email === adminEmail){
+      const delBtn = document.createElement('button');
+      delBtn.className = 'danger';
+      delBtn.textContent = 'Supprimer';
+      delBtn.onclick = async () => {
+        if(confirm('Supprimer cette actualité ?')){
+          await supabase.from('actualites').delete().eq('id', n.id);
+          loadNews();
+        }
+      };
+      d.appendChild(delBtn);
+    }
+    container.appendChild(d);
+  });
+}
+
+// --- AJOUT ACTUALITÉ ---
+async function addNews(){
+  const t = document.getElementById('title').value.trim();
+  const d = document.getElementById('desc').value.trim();
+  const i = document.getElementById('img').value.trim();
+  const info = document.getElementById('info');
+
+  if(!t||!d){ alert('Champs obligatoires'); return; }
+
+  const { data, error } = await supabase
+    .from('actualites')
+    .insert([{ title: t, description: d, image: i }]);
+
+  if(error) info.textContent = 'Erreur : '+error.message;
+  else{
+    document.getElementById('title').value = '';
+    document.getElementById('desc').value = '';
+    document.getElementById('img').value = '';
+    info.textContent = 'Actualité enregistrée !';
+    loadNews();
   }
 }
 
+// --- Initial load ---
 loadNews();
 </script>
 </body>
