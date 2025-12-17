@@ -1,149 +1,92 @@
+# PAGE 1 — stockage.html
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Actualités - BAC PRO CIEL</title>
+<title>Stockage des actualités</title>
 <style>
-body{
-  font-family:Arial, sans-serif;
-  background:linear-gradient(#a6d6f7,#5c69d6,#0a1530);
-  color:white;margin:0;min-height:100vh;
-}
-header{background:#4a66ff;padding:15px;text-align:center;}
-header a{color:white;text-decoration:none;font-weight:bold;margin:0 10px;}
-#newsContainer{width:90%;margin:30px auto;display:grid;grid-template-columns:repeat(2,1fr);gap:20px;}
-.newsItem{background:#222;padding:15px;border-radius:12px;text-align:center;}
-.newsItem img{max-width:100%;border-radius:8px;margin-top:10px;}
-#addNewsBubble{position:fixed;bottom:30px;right:30px;width:60px;height:60px;background:#4a66ff;border-radius:50%;display:none;justify-content:center;align-items:center;font-size:30px;cursor:pointer;}
-.popup{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);justify-content:center;align-items:center;}
-.popup form{background:#111;padding:20px;border-radius:15px;width:350px;display:flex;flex-direction:column;gap:10px;}
-.popup input,.popup textarea,.popup button{padding:10px;border-radius:8px;border:none;}
-.popup button{background:#4a66ff;color:white;cursor:pointer;}
+body{font-family:Arial,sans-serif;background:#0a1530;color:white;margin:0;padding:20px}
+.box{max-width:600px;margin:auto;background:#111;padding:20px;border-radius:15px}
+input,textarea,button{width:100%;margin:8px 0;padding:10px;border-radius:8px;border:none}
+button{background:#4a66ff;color:white;font-weight:bold;cursor:pointer}
 </style>
 </head>
 <body>
-<header>
-  <a href="#" id="loginBtn">Connexion admin</a>
-  <a href="#" id="logoutBtn" style="display:none">Déconnexion</a>
-</header>
-
-<h1 style="text-align:center;margin-top:20px;">Actualités</h1>
-<div id="newsContainer"></div>
-<div id="addNewsBubble">+</div>
-
-<div class="popup" id="loginPopup">
-<form id="loginForm">
-<h2>Connexion admin</h2>
-<input type="text" id="loginUser" placeholder="Utilisateur" required>
-<input type="password" id="loginPass" placeholder="Mot de passe" required>
-<button type="submit">Connexion</button>
-<button type="button" id="closeLogin">Fermer</button>
-</form>
-</div>
-
-<div class="popup" id="newsPopup">
-<form id="newsForm">
-<h2>Actualité</h2>
-<input type="text" id="newsTitle" placeholder="Titre" required>
-<textarea id="newsDesc" placeholder="Description" required></textarea>
-<input type="file" id="newsImg">
-<input type="text" id="newsLink" placeholder="Lien (optionnel)">
-<button type="submit">Enregistrer</button>
-<button type="button" id="closeNews">Annuler</button>
-</form>
+<div class="box">
+<h2>Ajouter une actualité</h2>
+<input id="title" placeholder="Titre">
+<textarea id="desc" placeholder="Description"></textarea>
+<input id="img" placeholder="URL image (optionnel)">
+<button onclick="addNews()">Enregistrer</button>
+<button onclick="clearNews()">Tout supprimer</button>
+<p id="info"></p>
 </div>
 
 <script>
-// ADMIN PAR DEFAUT
-if(!localStorage.getItem('adminUser')){
-  localStorage.setItem('adminUser', JSON.stringify({user:'admin', pass:'admin123'}));
+const KEY = 'BACPROCIEL_NEWS_V1';
+
+function getNews(){return JSON.parse(localStorage.getItem(KEY)||'[]');}
+function saveNews(n){localStorage.setItem(KEY,JSON.stringify(n));}
+
+function addNews(){
+  const t=title.value.trim(), d=desc.value.trim(), i=img.value.trim();
+  if(!t||!d){alert('Champs obligatoires');return;}
+  const n=getNews();
+  n.unshift({title:t,desc:d,img:i});
+  saveNews(n);
+  title.value=desc.value=img.value='';
+  info.textContent='Actualité enregistrée';
 }
 
-const loginBtn = document.getElementById('loginBtn');
-const logoutBtn = document.getElementById('logoutBtn');
-const loginPopup = document.getElementById('loginPopup');
-const newsPopup = document.getElementById('newsPopup');
-const addBubble = document.getElementById('addNewsBubble');
-const newsContainer = document.getElementById('newsContainer');
-
-let isAdmin = false;
-let editIndex = null;
-
-loginBtn.onclick = () => loginPopup.style.display = 'flex';
-document.getElementById('closeLogin').onclick = () => loginPopup.style.display = 'none';
-
-document.getElementById('loginForm').onsubmit = e => {
-  e.preventDefault();
-  const u = loginUser.value;
-  const p = loginPass.value;
-  const admin = JSON.parse(localStorage.getItem('adminUser'));
-  if(u === admin.user && p === admin.pass){
-    sessionStorage.setItem('isAdmin','true');
-    location.reload();
-  } else alert('Identifiants incorrects');
-};
-
-logoutBtn.onclick = () => { sessionStorage.clear(); location.reload(); };
-
-addBubble.onclick = () => {
-  editIndex = null;
-  newsForm.reset();
-  newsPopup.style.display = 'flex';
-};
-
-document.getElementById('closeNews').onclick = () => newsPopup.style.display = 'none';
-
-document.getElementById('newsForm').onsubmit = e => {
-  e.preventDefault();
-  const news = JSON.parse(localStorage.getItem('news') || '[]');
-  const save = img => {
-    const obj = {title:newsTitle.value, desc:newsDesc.value, link:newsLink.value, img};
-    if(editIndex !== null) news[editIndex] = obj;
-    else news.unshift(obj);
-    localStorage.setItem('news', JSON.stringify(news));
-    newsPopup.style.display = 'none';
-    loadNews();
-  };
-  if(newsImg.files[0]){
-    const r = new FileReader();
-    r.onload = e => save(e.target.result);
-    r.readAsDataURL(newsImg.files[0]);
-  } else save('');
-};
-
-function loadNews(){
-  const news = JSON.parse(localStorage.getItem('news') || '[]');
-  newsContainer.innerHTML = '';
-  if(news.length === 0){
-    newsContainer.innerHTML = '<p style="grid-column:1/3;text-align:center">Aucune actualité pour le moment.</p>';
-    return;
+function clearNews(){
+  if(confirm('Supprimer toutes les actus ?')){
+    localStorage.removeItem(KEY);
+    info.textContent='Stockage vidé';
   }
-  news.forEach((n,i)=>{
-    const d = document.createElement('div');
-    d.className = 'newsItem';
-    d.innerHTML = `<h3>${n.title}</h3><p>${n.desc}</p>${n.img?`<img src="${n.img}">`:''}${n.link?`<p><a href="${n.link}" target="_blank">Voir plus</a></p>`:''}${isAdmin?`<button onclick="edit(${i})">Modifier</button>`:''}`;
-    newsContainer.appendChild(d);
+}
+</script>
+</body>
+</html>
+
+
+---
+
+# PAGE 2 — actualites.html
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Actualités</title>
+<style>
+body{font-family:Arial,sans-serif;background:linear-gradient(#a6d6f7,#5c69d6,#0a1530);color:white;margin:0}
+h1{text-align:center;margin:20px}
+#news{width:90%;margin:auto;display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
+.card{background:#222;padding:15px;border-radius:12px;text-align:center}
+.card img{max-width:100%;border-radius:8px;margin-top:10px}
+</style>
+</head>
+<body>
+<h1>Actualités</h1>
+<div id="news"></div>
+
+<script>
+const KEY = 'BACPROCIEL_NEWS_V1';
+const container=document.getElementById('news');
+
+const data = JSON.parse(localStorage.getItem(KEY)||'[]');
+
+if(data.length===0){
+  container.innerHTML='<p style="grid-column:1/3;text-align:center">Aucune actualité pour le moment.</p>';
+}else{
+  data.forEach(n=>{
+    const d=document.createElement('div');
+    d.className='card';
+    d.innerHTML=`<h3>${n.title}</h3><p>${n.desc}</p>${n.img?`<img src="${n.img}">`:''}`;
+    container.appendChild(d);
   });
 }
-
-window.edit = i => {
-  const n = JSON.parse(localStorage.getItem('news'))[i];
-  editIndex = i;
-  newsTitle.value = n.title;
-  newsDesc.value = n.desc;
-  newsLink.value = n.link || '';
-  newsPopup.style.display = 'flex';
-};
-
-window.onload = () => {
-  if(sessionStorage.getItem('isAdmin')){
-    isAdmin = true;
-    addBubble.style.display = 'flex';
-    loginBtn.style.display = 'none';
-    logoutBtn.style.display = 'inline';
-  }
-  loadNews();
-};
 </script>
 </body>
 </html>
