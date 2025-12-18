@@ -6,6 +6,8 @@
 <title>BAC PRO CIEL - Menu déroulant</title>
 <!-- Police Comic Sans web pour compatibilité mobile -->
 <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet">
+<!-- Supabase JS -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 * { font-family: 'Comic Neue', cursive, sans-serif !important; margin:0; padding:0; box-sizing:border-box; }
 body { background: linear-gradient(#a6d6f7, #5c69d6, #0a1530); color:#fff; min-height:100vh; }
@@ -123,7 +125,7 @@ h2 { text-align:center; margin:10px 0 40px; font-size:4vw; }
 <button type="button" onclick="togglePassword('loginPassword')">Voir</button>
 </div>
 <button class="submit" type="submit">Se connecter</button>
-<button class="close" type="button" onclick="loginForm.style.display='none'">Fermer</button>
+<button class="close" type="button" onclick="document.getElementById('loginForm').style.display='none'">Fermer</button>
 </form>
 </div>
 
@@ -141,91 +143,257 @@ h2 { text-align:center; margin:10px 0 40px; font-size:4vw; }
 <button type="button" onclick="togglePassword('signupPassword')">Voir</button>
 </div>
 <button class="submit" type="submit">Créer le compte</button>
-<button class="close" type="button" onclick="signupForm.style.display='none'">Fermer</button>
+<button class="close" type="button" onclick="document.getElementById('signupForm').style.display='none'">Fermer</button>
 </form>
 </div>
 
 <script>
-// SUPERADMIN
-if(!localStorage.getItem("SUPERADMIN")){
-    localStorage.setItem("SUPERADMIN", JSON.stringify({
-        prenom:"Super", nom:"Admin", username:"SUPERADMIN", password:"MASTER",
-        role:"admin", banned:false, createdAt:new Date().toLocaleDateString(), protected:true
-    }));
+// ========================================
+// CONFIGURATION SUPABASE
+// ========================================
+const SUPABASE_URL = 'https://TON_URL.supabase.co';
+const SUPABASE_KEY = 'TON_ANON_KEY';
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ========================================
+// RÉFÉRENCES ÉLÉMENTS DOM
+// ========================================
+const loginBtn = document.getElementById('loginBtn');
+const signupBtn = document.getElementById('signupBtn');
+const logoutBtn = document.getElementById('logoutBtn');
+const profilBtn = document.getElementById('profilBtn');
+const deleteAccountBtn = document.getElementById('deleteAccountBtn');
+const adminLink = document.getElementById('adminLink');
+const userDisplay = document.getElementById('userDisplay');
+const loginForm = document.getElementById('loginForm');
+const signupForm = document.getElementById('signupForm');
+
+// ========================================
+// GESTION DE L'UTILISATEUR CONNECTÉ
+// ========================================
+
+// Récupérer l'utilisateur connecté depuis sessionStorage
+function getConnectedUser() {
+    const userId = sessionStorage.getItem('connectedUserId');
+    return userId;
 }
 
-// Utilisateur connecté
-function getConnected(){ return JSON.parse(localStorage.getItem("connectedUser")); }
-function afficherUtilisateur(user){
-    loginBtn.style.display='none';
-    signupBtn.style.display='inline-block'; // peut créer compte
-    profilBtn.style.display='inline-block';
-    deleteAccountBtn.style.display='inline-block';
-    logoutBtn.style.display='inline-block';
-    adminLink.style.display = user.role==='admin' ? 'inline-block' : 'none';
-    userDisplay.textContent = `Bienvenue, ${user.prenom} ${user.nom} (${user.role})`;
+// Sauvegarder l'utilisateur connecté
+function setConnectedUser(userId) {
+    sessionStorage.setItem('connectedUserId', userId);
 }
 
-// Toggle mot de passe
-function togglePassword(id){
-    const input=document.getElementById(id);
-    input.type = input.type==='password'?'text':'password';
+// Supprimer l'utilisateur connecté
+function clearConnectedUser() {
+    sessionStorage.removeItem('connectedUserId');
 }
 
-// Connexion
-document.getElementById('formLogin').addEventListener('submit', e=>{
+// Afficher l'interface utilisateur connecté
+async function afficherUtilisateur(userId) {
+    try {
+        // Récupérer les infos de l'utilisateur depuis Supabase
+        const { data: user, error } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', userId)
+            .single();
+
+        if (error || !user) {
+            console.error('Erreur récupération utilisateur:', error);
+            clearConnectedUser();
+            return;
+        }
+
+        // Vérifier si banni
+        if (user.banned) {
+            alert("Votre compte a été banni !");
+            clearConnectedUser();
+            location.reload();
+            return;
+        }
+
+        // Affichage interface
+        loginBtn.style.display = 'none';
+        signupBtn.style.display = 'inline-block';
+        profilBtn.style.display = 'inline-block';
+        deleteAccountBtn.style.display = 'inline-block';
+        logoutBtn.style.display = 'inline-block';
+        adminLink.style.display = user.role === 'admin' ? 'inline-block' : 'none';
+        userDisplay.textContent = `Bienvenue, ${user.prenom} ${user.nom} (${user.role})`;
+
+    } catch (err) {
+        console.error('Erreur affichage utilisateur:', err);
+    }
+}
+
+// ========================================
+// TOGGLE MOT DE PASSE
+// ========================================
+function togglePassword(id) {
+    const input = document.getElementById(id);
+    input.type = input.type === 'password' ? 'text' : 'password';
+}
+
+// ========================================
+// CONNEXION
+// ========================================
+document.getElementById('formLogin').addEventListener('submit', async (e) => {
     e.preventDefault();
-    const username=loginUsername.value;
-    const password=loginPassword.value;
-    const data=localStorage.getItem(username);
-    if(!data){ alert('Utilisateur inconnu'); return; }
-    const user=JSON.parse(data);
-    if(user.password!==password){ alert('Mot de passe incorrect'); return; }
-    if(user.banned){ alert("Compte banni !"); return; }
-    sessionStorage.setItem('loggedUser', user.username);
-    localStorage.setItem("connectedUser", JSON.stringify(user));
-    afficherUtilisateur(user);
-    loginForm.style.display='none';
+
+    const username = document.getElementById('loginUsername').value.trim();
+    const password = document.getElementById('loginPassword').value.trim();
+
+    try {
+        // Recherche de l'utilisateur
+        const { data: users, error } = await supabase
+            .from('users')
+            .select('*')
+            .eq('username', username)
+            .single();
+
+        if (error || !users) {
+            alert('Utilisateur inconnu !');
+            return;
+        }
+
+        // Vérification mot de passe
+        if (users.password !== password) {
+            alert('Mot de passe incorrect !');
+            return;
+        }
+
+        // Vérification si banni
+        if (users.banned) {
+            alert("Votre compte a été banni !");
+            return;
+        }
+
+        // Connexion réussie
+        setConnectedUser(users.id);
+        await afficherUtilisateur(users.id);
+        loginForm.style.display = 'none';
+        alert(`Bienvenue ${users.prenom} !`);
+
+    } catch (err) {
+        console.error('Erreur connexion:', err);
+        alert('Erreur lors de la connexion');
+    }
 });
 
-// Création compte
+// ========================================
+// CRÉATION DE COMPTE
+// ========================================
 signupBtn.onclick = () => { signupForm.style.display = 'flex'; };
-document.getElementById('formSignup').addEventListener('submit', e=>{
+
+document.getElementById('formSignup').addEventListener('submit', async (e) => {
     e.preventDefault();
-    const user={
-        prenom:signupPrenom.value, nom:signupNom.value, dob:signupDob.value,
-        email:signupEmail.value, username:signupUsername.value, password:signupPassword.value,
-        role:'client'
-    };
-    if(localStorage.getItem(user.username)){ alert('Utilisateur existant !'); return; }
-    localStorage.setItem(user.username, JSON.stringify(user));
-    alert('Compte créé !');
-    signupForm.style.display='none';
+
+    const prenom = document.getElementById('signupPrenom').value.trim();
+    const nom = document.getElementById('signupNom').value.trim();
+    const dob = document.getElementById('signupDob').value;
+    const email = document.getElementById('signupEmail').value.trim();
+    const username = document.getElementById('signupUsername').value.trim();
+    const password = document.getElementById('signupPassword').value.trim();
+
+    try {
+        // Vérifier si l'utilisateur existe déjà
+        const { data: existingUser } = await supabase
+            .from('users')
+            .select('id')
+            .eq('username', username)
+            .single();
+
+        if (existingUser) {
+            alert('Ce nom d\'utilisateur existe déjà !');
+            return;
+        }
+
+        // Créer le nouvel utilisateur
+        const { data, error } = await supabase
+            .from('users')
+            .insert([{
+                prenom: prenom,
+                nom: nom,
+                dob: dob,
+                email: email,
+                username: username,
+                password: password,
+                role: 'client',
+                banned: false,
+                protected: false
+            }])
+            .select();
+
+        if (error) {
+            console.error('Erreur création compte:', error);
+            alert('Erreur lors de la création du compte');
+            return;
+        }
+
+        alert('Compte créé avec succès ! Vous pouvez maintenant vous connecter.');
+        signupForm.style.display = 'none';
+        document.getElementById('formSignup').reset();
+
+    } catch (err) {
+        console.error('Erreur création compte:', err);
+        alert('Erreur lors de la création du compte');
+    }
 });
 
-// Gestion profil / suppression / déconnexion
-profilBtn.onclick=()=>window.location.href="profil.html";
-deleteAccountBtn.onclick=()=>{
-    if(confirm("Supprimer le compte ?")){
-        const username=sessionStorage.getItem('loggedUser');
-        localStorage.removeItem(username);
-        sessionStorage.removeItem('loggedUser');
-        alert("Compte supprimé !");
+// ========================================
+// SUPPRESSION DE COMPTE
+// ========================================
+deleteAccountBtn.onclick = async () => {
+    if (!confirm("Êtes-vous sûr de vouloir supprimer votre compte ?")) return;
+
+    const userId = getConnectedUser();
+    if (!userId) return;
+
+    try {
+        const { error } = await supabase
+            .from('users')
+            .delete()
+            .eq('id', userId);
+
+        if (error) {
+            console.error('Erreur suppression:', error);
+            alert('Erreur lors de la suppression du compte');
+            return;
+        }
+
+        alert("Compte supprimé avec succès !");
+        clearConnectedUser();
         location.reload();
+
+    } catch (err) {
+        console.error('Erreur suppression:', err);
+        alert('Erreur lors de la suppression du compte');
     }
 };
-logoutBtn.onclick=()=>{ sessionStorage.removeItem('loggedUser'); location.reload(); };
 
-// Vérification session
-window.onload=()=>{
-    const u=sessionStorage.getItem('loggedUser');
-    if(u){ const user=JSON.parse(localStorage.getItem(u)); afficherUtilisateur(user); }
+// ========================================
+// DÉCONNEXION
+// ========================================
+logoutBtn.onclick = () => {
+    clearConnectedUser();
+    location.reload();
 };
 
-// Popup Connexion
-loginBtn.onclick=()=>loginForm.style.display='flex';
+// ========================================
+// POPUP CONNEXION
+// ========================================
+loginBtn.onclick = () => loginForm.style.display = 'flex';
+
+// ========================================
+// CHARGEMENT INITIAL
+// ========================================
+window.onload = async () => {
+    const userId = getConnectedUser();
+    if (userId) {
+        await afficherUtilisateur(userId);
+    }
+};
 </script>
 
 </body>
 </html>
-
