@@ -98,6 +98,8 @@ h2 { text-align:center; font-size:50px; margin:30px 0 20px 0; }
  flex-direction:column;
  gap:20px;
  width:450px;
+ max-height: 90vh;
+ overflow-y: auto;
 }
 .login-popup input, .login-popup select, .login-popup textarea {
  padding:15px;
@@ -128,6 +130,8 @@ h2 { text-align:center; font-size:50px; margin:30px 0 20px 0; }
  border-radius:10px;
  border:none;
  font-size:18px;
+ min-height: 80px;
+ resize: vertical;
 }
 #commentSection form button {
  padding:12px;
@@ -142,7 +146,29 @@ h2 { text-align:center; font-size:50px; margin:30px 0 20px 0; }
 
 /* --- Commentaires --- */
 .comment, .reply {
- background:#222; padding:10px; border-radius:10px; margin-bottom:10px; position:relative;
+ background:#222; padding:15px; border-radius:10px; margin-bottom:15px; position:relative;
+}
+.comment-header {
+ display: flex;
+ justify-content: space-between;
+ align-items: center;
+ margin-bottom: 10px;
+}
+.comment-author {
+ font-weight: bold;
+ color: #4a66ff;
+}
+.comment-date {
+ font-size: 14px;
+ color: #888;
+}
+.comment-text {
+ margin: 10px 0;
+}
+.comment-actions {
+ display: flex;
+ gap: 10px;
+ margin-top: 10px;
 }
 .likeBtn, .likeReplyBtn {
  background: #4a66ff;
@@ -160,9 +186,54 @@ h2 { text-align:center; font-size:50px; margin:30px 0 20px 0; }
 .likeBtn:hover, .likeReplyBtn:hover { background: #6e82ff; transform: scale(1.05); }
 .likeBtn.liked, .likeReplyBtn.liked { background: #22c55e; transform: scale(1.1); }
 .replyBtn {
- background:#888; color:white; border:none; border-radius:8px; padding:4px 8px; cursor:pointer; margin-left:5px;
+ background:#888; color:white; border:none; border-radius:8px; padding:6px 12px; cursor:pointer;
 }
 .replyBtn:hover { background:#aaa; }
+.deleteBtn {
+ background:#ff4444; color:white; border:none; border-radius:8px; padding:6px 12px; cursor:pointer;
+}
+.deleteBtn:hover { background:#ff6666; }
+
+/* Replies container */
+.replies-container {
+ margin-left: 30px;
+ margin-top: 15px;
+}
+.reply {
+ background:#1a1a1a;
+ padding:10px;
+ border-left: 3px solid #4a66ff;
+}
+
+/* Reply form */
+.reply-form {
+ margin-left: 30px;
+ margin-top: 10px;
+ display: none;
+}
+.reply-form.active {
+ display: block;
+}
+.reply-form textarea {
+ width: 100%;
+ padding: 8px;
+ border-radius: 8px;
+ border: none;
+ margin-bottom: 5px;
+ min-height: 60px;
+}
+.reply-form button {
+ padding: 8px 15px;
+ border-radius: 8px;
+ border: none;
+ background: #4a66ff;
+ color: white;
+ cursor: pointer;
+ margin-right: 5px;
+}
+.reply-form button:hover {
+ background: #6e82ff;
+}
 </style>
 </head>
 <body>
@@ -213,10 +284,6 @@ h2 { text-align:center; font-size:50px; margin:30px 0 20px 0; }
         <input type="email" id="signupEmail" placeholder="Email" required>
         <input type="text" id="signupUsername" placeholder="Nom d'utilisateur" required>
         <input type="password" id="signupPassword" placeholder="Mot de passe" required>
-        <select id="signupRole">
-            <option value="client">Client</option>
-            <option value="admin">Admin</option>
-        </select>
         <button type="submit">Créer</button>
         <button type="button" id="closeSignup">Fermer</button>
     </form>
@@ -232,7 +299,7 @@ h2 { text-align:center; font-size:50px; margin:30px 0 20px 0; }
     Une part importante du programme est dédiée au développement d'applications simples et à la programmation. 
     Ils découvrent les langages informatiques de base, les structures de données, et l'écriture de scripts pour automatiser certaines tâches.<br>
     Au-delà des aspects techniques, le Bac Pro CIEL forme les élèves à la méthodologie de projet et au travail en équipe, des compétences indispensables dans le domaine professionnel.
-    <button id="likeMainBtn">👍 0</button>
+    <button id="likeMainBtn">👍 <span id="mainLikesCount">0</span></button>
 </div>
 
 <!-- Section Commentaires -->
@@ -245,18 +312,19 @@ h2 { text-align:center; font-size:50px; margin:30px 0 20px 0; }
     <div id="commentsList"></div>
 </div>
 
-<!-- Liste membres (admin) -->
-<div id="membersContainer" style="display:none;">
-    <h2>Liste des membres (Admin)</h2>
-    <div id="membersList"></div>
-</div>
-
 <script>
-// ==========================================
-// Gestion des popups de connexion et création de compte
-// ==========================================
+// ========================================
+// CONFIGURATION SUPABASE
+// ========================================
+const SUPABASE_URL = 'https://TON_URL.supabase.co';
+const SUPABASE_KEY = 'TON_ANON_KEY';
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// Récupération des éléments
+const PAGE_NAME = 'cybersecurite'; // Identifiant unique pour cette page
+
+// ========================================
+// RÉFÉRENCES ÉLÉMENTS
+// ========================================
 const loginBtn = document.getElementById('loginBtn');
 const signupBtn = document.getElementById('signupBtn');
 const logoutBtn = document.getElementById('logoutBtn');
@@ -264,49 +332,629 @@ const closeLogin = document.getElementById('closeLogin');
 const closeSignup = document.getElementById('closeSignup');
 const loginForm = document.getElementById('loginForm');
 const signupForm = document.getElementById('signupForm');
+const likeMainBtn = document.getElementById('likeMainBtn');
+const commentForm = document.getElementById('commentForm');
+const commentsList = document.getElementById('commentsList');
 
-// Ouvrir la popup de connexion
+let currentUser = null;
+let isAdmin = false;
+
+// ========================================
+// GESTION UTILISATEUR
+// ========================================
+function getConnectedUserId() {
+    return sessionStorage.getItem('connectedUserId');
+}
+
+async function loadCurrentUser() {
+    const userId = getConnectedUserId();
+    if (!userId) {
+        loginBtn.style.display = 'inline-block';
+        logoutBtn.style.display = 'none';
+        return;
+    }
+
+    try {
+        const { data: user, error } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', userId)
+            .single();
+
+        if (error || !user) {
+            currentUser = null;
+            isAdmin = false;
+            return;
+        }
+
+        currentUser = user;
+        isAdmin = user.role === 'admin';
+        loginBtn.style.display = 'none';
+        logoutBtn.style.display = 'inline-block';
+
+    } catch (err) {
+        console.error('Erreur chargement utilisateur:', err);
+    }
+}
+
+// ========================================
+// POPUPS
+// ========================================
 loginBtn.addEventListener('click', (e) => {
     e.preventDefault();
     loginForm.classList.add('active');
-    signupForm.classList.remove('active');
 });
 
-// Ouvrir la popup de création de compte
 signupBtn.addEventListener('click', (e) => {
     e.preventDefault();
     signupForm.classList.add('active');
-    loginForm.classList.remove('active');
 });
 
-// Fermer la popup de connexion
 closeLogin.addEventListener('click', () => {
     loginForm.classList.remove('active');
 });
 
-// Fermer la popup de création de compte
 closeSignup.addEventListener('click', () => {
     signupForm.classList.remove('active');
 });
 
-// Fermer les popups en cliquant sur l'arrière-plan
 loginForm.addEventListener('click', (e) => {
-    if (e.target === loginForm) {
-        loginForm.classList.remove('active');
-    }
+    if (e.target === loginForm) loginForm.classList.remove('active');
 });
 
 signupForm.addEventListener('click', (e) => {
-    if (e.target === signupForm) {
-        signupForm.classList.remove('active');
+    if (e.target === signupForm) signupForm.classList.remove('active');
+});
+
+// ========================================
+// CONNEXION
+// ========================================
+document.getElementById('formLogin').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const username = document.getElementById('loginUsername').value.trim();
+    const password = document.getElementById('loginPassword').value.trim();
+
+    try {
+        const { data: user, error } = await supabase
+            .from('users')
+            .select('*')
+            .eq('username', username)
+            .single();
+
+        if (error || !user) {
+            alert('Utilisateur inconnu !');
+            return;
+        }
+
+        if (user.password !== password) {
+            alert('Mot de passe incorrect !');
+            return;
+        }
+
+        if (user.banned) {
+            alert('Votre compte a été banni !');
+            return;
+        }
+
+        sessionStorage.setItem('connectedUserId', user.id);
+        alert(`Bienvenue ${user.prenom} !`);
+        loginForm.classList.remove('active');
+        await loadCurrentUser();
+        await loadMainLikes();
+        await loadComments();
+
+    } catch (err) {
+        console.error('Erreur connexion:', err);
+        alert('Erreur lors de la connexion');
     }
 });
 
-// ==========================================
-// Votre code JavaScript existant pour Supabase,
-// la gestion des utilisateurs, commentaires, etc.
-// À ajouter ici...
-// ==========================================
+// ========================================
+// INSCRIPTION
+// ========================================
+document.getElementById('formSignup').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const prenom = document.getElementById('signupPrenom').value.trim();
+    const nom = document.getElementById('signupNom').value.trim();
+    const email = document.getElementById('signupEmail').value.trim();
+    const username = document.getElementById('signupUsername').value.trim();
+    const password = document.getElementById('signupPassword').value.trim();
+
+    try {
+        const { data: existing } = await supabase
+            .from('users')
+            .select('id')
+            .eq('username', username)
+            .single();
+
+        if (existing) {
+            alert('Ce nom d\'utilisateur existe déjà !');
+            return;
+        }
+
+        const { error } = await supabase
+            .from('users')
+            .insert([{
+                prenom, nom, email, username, password,
+                role: 'client'
+            }]);
+
+        if (error) {
+            console.error('Erreur inscription:', error);
+            alert('Erreur lors de la création du compte');
+            return;
+        }
+
+        alert('Compte créé avec succès !');
+        signupForm.classList.remove('active');
+        document.getElementById('formSignup').reset();
+
+    } catch (err) {
+        console.error('Erreur inscription:', err);
+        alert('Erreur lors de la création du compte');
+    }
+});
+
+// ========================================
+// DÉCONNEXION
+// ========================================
+logoutBtn.addEventListener('click', () => {
+    sessionStorage.removeItem('connectedUserId');
+    location.reload();
+});
+
+// ========================================
+// LIKE DU TEXTE PRINCIPAL
+// ========================================
+async function loadMainLikes() {
+    try {
+        const { count } = await supabase
+            .from('main_text_likes')
+            .select('*', { count: 'exact', head: true })
+            .eq('page', PAGE_NAME);
+
+        document.getElementById('mainLikesCount').textContent = count || 0;
+
+        const userId = getConnectedUserId();
+        if (userId) {
+            const { data } = await supabase
+                .from('main_text_likes')
+                .select('id')
+                .eq('page', PAGE_NAME)
+                .eq('user_id', userId)
+                .single();
+
+            if (data) {
+                likeMainBtn.classList.add('liked');
+            }
+        }
+    } catch (err) {
+        console.error('Erreur chargement likes:', err);
+    }
+}
+
+likeMainBtn.addEventListener('click', async () => {
+    const userId = getConnectedUserId();
+    if (!userId) {
+        alert('Vous devez être connecté pour liker');
+        return;
+    }
+
+    try {
+        const { data: existing } = await supabase
+            .from('main_text_likes')
+            .select('id')
+            .eq('page', PAGE_NAME)
+            .eq('user_id', userId)
+            .single();
+
+        if (existing) {
+            // Supprimer le like
+            await supabase
+                .from('main_text_likes')
+                .delete()
+                .eq('id', existing.id);
+                
+            likeMainBtn.classList.remove('liked');
+        } else {
+            // Ajouter le like
+            await supabase
+                .from('main_text_likes')
+                .insert([{
+                    page: PAGE_NAME,
+                    user_id: userId
+                }]);
+                
+            likeMainBtn.classList.add('liked');
+        }
+
+        await loadMainLikes();
+
+    } catch (err) {
+        console.error('Erreur like:', err);
+        alert('Erreur lors du like');
+    }
+});
+
+// ========================================
+// COMMENTAIRES
+// ========================================
+commentForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const userId = getConnectedUserId();
+    if (!userId) {
+        alert('Vous devez être connecté pour commenter');
+        return;
+    }
+
+    const text = document.getElementById('commentText').value.trim();
+    if (!text) return;
+
+    try {
+        await supabase
+            .from('comments')
+            .insert([{
+                text: text,
+                user_id: userId,
+                username: currentUser.username,
+                actualite_id: null // null car c'est un commentaire de page
+            }]);
+
+        document.getElementById('commentText').value = '';
+        await loadComments();
+
+    } catch (err) {
+        console.error('Erreur ajout commentaire:', err);
+        alert('Erreur lors de l\'ajout du commentaire');
+    }
+});
+
+async function loadComments() {
+    try {
+        const { data: comments, error } = await supabase
+            .from('comments')
+            .select('*')
+            .is('actualite_id', null)
+            .eq('hidden', false)
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            console.error('Erreur chargement commentaires:', error);
+            return;
+        }
+
+        commentsList.innerHTML = '';
+
+        for (const comment of comments) {
+            const commentDiv = await createCommentElement(comment);
+            commentsList.appendChild(commentDiv);
+        }
+
+    } catch (err) {
+        console.error('Erreur chargement commentaires:', err);
+    }
+}
+
+async function createCommentElement(comment) {
+    const div = document.createElement('div');
+    div.className = 'comment';
+    
+    const likesCount = await getCommentLikesCount(comment.id);
+    const isLiked = await checkIfCommentLiked(comment.id);
+    
+    const date = new Date(comment.created_at).toLocaleString('fr-FR');
+    
+    const deleteButton = (isAdmin || (currentUser && currentUser.id === comment.user_id)) 
+        ? `<button class="deleteBtn" onclick="deleteComment('${comment.id}')">Supprimer</button>` 
+        : '';
+    
+    div.innerHTML = `
+        <div class="comment-header">
+            <span class="comment-author">${comment.username}</span>
+            <span class="comment-date">${date}</span>
+        </div>
+        <div class="comment-text">${comment.text}</div>
+        <div class="comment-actions">
+            <button class="likeBtn ${isLiked ? 'liked' : ''}" onclick="toggleLikeComment('${comment.id}')">
+                👍 <span id="comment-likes-${comment.id}">${likesCount}</span>
+            </button>
+            <button class="replyBtn" onclick="showReplyForm('${comment.id}')">Répondre</button>
+            ${deleteButton}
+        </div>
+        <div class="reply-form" id="reply-form-${comment.id}">
+            <textarea id="reply-text-${comment.id}" placeholder="Écrire une réponse..."></textarea>
+            <button onclick="submitReply('${comment.id}')">Envoyer</button>
+            <button onclick="hideReplyForm('${comment.id}')">Annuler</button>
+        </div>
+        <div class="replies-container" id="replies-${comment.id}"></div>
+    `;
+    
+    // Charger les réponses
+    await loadReplies(comment.id);
+    
+    return div;
+}
+
+// ========================================
+// LIKES COMMENTAIRES
+// ========================================
+async function getCommentLikesCount(commentId) {
+    try {
+        const { count } = await supabase
+            .from('comment_likes')
+            .select('*', { count: 'exact', head: true })
+            .eq('comment_id', commentId);
+        return count || 0;
+    } catch (err) {
+        return 0;
+    }
+}
+
+async function checkIfCommentLiked(commentId) {
+    const userId = getConnectedUserId();
+    if (!userId) return false;
+    
+    try {
+        const { data } = await supabase
+            .from('comment_likes')
+            .select('id')
+            .eq('comment_id', commentId)
+            .eq('user_id', userId)
+            .single();
+        return !!data;
+    } catch (err) {
+        return false;
+    }
+}
+
+async function toggleLikeComment(commentId) {
+    const userId = getConnectedUserId();
+    if (!userId) {
+        alert('Vous devez être connecté pour liker');
+        return;
+    }
+    
+    try {
+        const { data: existing } = await supabase
+            .from('comment_likes')
+            .select('id')
+            .eq('comment_id', commentId)
+            .eq('user_id', userId)
+            .single();
+
+        if (existing) {
+            await supabase
+                .from('comment_likes')
+                .delete()
+                .eq('id', existing.id);
+        } else {
+            await supabase
+                .from('comment_likes')
+                .insert([{
+                    comment_id: commentId,
+                    user_id: userId
+                }]);
+        }
+
+        await loadComments();
+
+    } catch (err) {
+        console.error('Erreur like commentaire:', err);
+        alert('Erreur lors du like');
+    }
+}
+
+// ========================================
+// RÉPONSES AUX COMMENTAIRES
+// ========================================
+function showReplyForm(commentId) {
+    if (!getConnectedUserId()) {
+        alert('Vous devez être connecté pour répondre');
+        return;
+    }
+    document.getElementById(`reply-form-${commentId}`).classList.add('active');
+}
+
+function hideReplyForm(commentId) {
+    document.getElementById(`reply-form-${commentId}`).classList.remove('active');
+}
+
+async function submitReply(commentId) {
+    const userId = getConnectedUserId();
+    if (!userId) return;
+    
+    const text = document.getElementById(`reply-text-${commentId}`).value.trim();
+    if (!text) return;
+    
+    try {
+        await supabase
+            .from('replies')
+            .insert([{
+                comment_id: commentId,
+                user_id: userId,
+                username: currentUser.username,
+                text: text
+            }]);
+
+        hideReplyForm(commentId);
+        await loadComments();
+
+    } catch (err) {
+        console.error('Erreur ajout réponse:', err);
+        alert('Erreur lors de l\'ajout de la réponse');
+    }
+}
+
+async function loadReplies(commentId) {
+    try {
+        const { data: replies, error } = await supabase
+            .from('replies')
+            .select('*')
+            .eq('comment_id', commentId)
+            .order('created_at', { ascending: true });
+
+        if (error) return;
+
+        const repliesContainer = document.getElementById(`replies-${commentId}`);
+        repliesContainer.innerHTML = '';
+
+        for (const reply of replies) {
+            const replyDiv = await createReplyElement(reply);
+            repliesContainer.appendChild(replyDiv);
+        }
+
+    } catch (err) {
+        console.error('Erreur chargement réponses:', err);
+    }
+}
+
+async function createReplyElement(reply) {
+    const div = document.createElement('div');
+    div.className = 'reply';
+    
+    const likesCount = await getReplyLikesCount(reply.id);
+    const isLiked = await checkIfReplyLiked(reply.id);
+    
+    const date = new Date(reply.created_at).toLocaleString('fr-FR');
+    
+    const deleteButton = (isAdmin || (currentUser && currentUser.id === reply.user_id)) 
+        ? `<button class="deleteBtn" onclick="deleteReply('${reply.id}', '${reply.comment_id}')">Supprimer</button>` 
+        : '';
+    
+    div.innerHTML = `
+        <div class="comment-header">
+            <span class="comment-author">${reply.username}</span>
+            <span class="comment-date">${date}</span>
+        </div>
+        <div class="comment-text">${reply.text}</div>
+        <div class="comment-actions">
+            <button class="likeReplyBtn ${isLiked ? 'liked' : ''}" onclick="toggleLikeReply('${reply.id}')">
+                👍 <span id="reply-likes-${reply.id}">${likesCount}</span>
+            </button>
+            ${deleteButton}
+        </div>
+    `;
+    
+    return div;
+}
+
+// ========================================
+// LIKES RÉPONSES
+// ========================================
+async function getReplyLikesCount(replyId) {
+    try {
+        const { count } = await supabase
+            .from('reply_likes')
+            .select('*', { count: 'exact', head: true })
+            .eq('reply_id', replyId);
+        return count || 0;
+    } catch (err) {
+        return 0;
+    }
+}
+
+async function checkIfReplyLiked(replyId) {
+    const userId = getConnectedUserId();
+    if (!userId) return false;
+    
+    try {
+        const { data } = await supabase
+            .from('reply_likes')
+            .select('id')
+            .eq('reply_id', replyId)
+            .eq('user_id', userId)
+            .single();
+        return !!data;
+    } catch (err) {
+        return false;
+    }
+}
+
+async function toggleLikeReply(replyId) {
+    const userId = getConnectedUserId();
+    if (!userId) {
+        alert('Vous devez être connecté pour liker');
+        return;
+    }
+    
+    try {
+        const { data: existing } = await supabase
+            .from('reply_likes')
+            .select('id')
+            .eq('reply_id', replyId)
+            .eq('user_id', userId)
+            .single();
+
+        if (existing) {
+            await supabase
+                .from('reply_likes')
+                .delete()
+                .eq('id', existing.id);
+        } else {
+            await supabase
+                .from('reply_likes')
+                .insert([{
+                    reply_id: replyId,
+                    user_id: userId
+                }]);
+        }
+
+        await loadComments();
+
+    } catch (err) {
+        console.error('Erreur like réponse:', err);
+        alert('Erreur lors du like');
+    }
+}
+
+// ========================================
+// SUPPRESSION
+// ========================================
+async function deleteComment(commentId) {
+    if (!confirm('Supprimer ce commentaire ?')) return;
+    
+    try {
+        await supabase
+            .from('comments')
+            .delete()
+            .eq('id', commentId);
+
+        await loadComments();
+
+    } catch (err) {
+        console.error('Erreur suppression commentaire:', err);
+        alert('Erreur lors de la suppression');
+    }
+}
+
+async function deleteReply(replyId, commentId) {
+    if (!confirm('Supprimer cette réponse ?')) return;
+    
+    try {
+        await supabase
+            .from('replies')
+            .delete()
+            .eq('id', replyId);
+
+        await loadComments();
+
+    } catch (err) {
+        console.error('Erreur suppression réponse:', err);
+        alert('Erreur lors de la suppression');
+    }
+}
+
+// ========================================
+// CHARGEMENT INITIAL
+// ========================================
+window.onload = async () => {
+    await loadCurrentUser();
+    await loadMainLikes();
+    await loadComments();
+};
 </script>
 
 </body>
