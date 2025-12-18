@@ -9,7 +9,7 @@ const supabaseKey = 'VOTRE_CLE_PUBLIQUE';
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 // ========================================
-// INSCRIPTION (SIGN UP)
+// INSCRIPTION (CORRIGÉE - PAS DE TRIGGER)
 // ========================================
 
 async function signUp(email, password, username, prenom, nom) {
@@ -17,28 +17,24 @@ async function signUp(email, password, username, prenom, nom) {
     // 1️⃣ Créer l'utilisateur dans auth.users
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
-      password,
-      options: {
-        data: {
-          username: username // Métadonnées pour le trigger
-        }
-      }
+      password
     });
 
     if (authError) throw authError;
 
-    // 2️⃣ Le trigger crée automatiquement le profil dans users
-    // Mais on peut aussi le mettre à jour avec plus d'infos
-    const { error: updateError } = await supabase
-      .from('users')
-      .update({
+    // 2️⃣ Créer le profil manuellement
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .insert({
+        id: authData.user.id,
+        email,
+        username,
         prenom,
         nom,
-        username
-      })
-      .eq('id', authData.user.id);
+        role: 'client'
+      });
 
-    if (updateError) throw updateError;
+    if (profileError) throw profileError;
 
     console.log('✅ Inscription réussie !', authData);
     return { success: true, user: authData.user };
@@ -50,7 +46,7 @@ async function signUp(email, password, username, prenom, nom) {
 }
 
 // ========================================
-// CONNEXION (SIGN IN)
+// CONNEXION
 // ========================================
 
 async function signIn(email, password) {
@@ -72,7 +68,7 @@ async function signIn(email, password) {
 }
 
 // ========================================
-// DÉCONNEXION (SIGN OUT)
+// DÉCONNEXION
 // ========================================
 
 async function signOut() {
@@ -90,24 +86,21 @@ async function signOut() {
 }
 
 // ========================================
-// RÉCUPÉRER L'UTILISATEUR CONNECTÉ
+// RÉCUPÉRER L'UTILISATEUR CONNECTÉ (CORRIGÉ)
 // ========================================
 
 async function getCurrentUser() {
   try {
-    // Récupérer l'utilisateur auth
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError) throw authError;
+    const { data: { user } } = await supabase.auth.getUser();
     if (!user) return null;
 
-    // Récupérer le profil complet
-    const { data: profile, error: profileError } = await supabase
-      .from('users')
+    const { data: profile, error } = await supabase
+      .from('profiles')
       .select('*')
       .eq('id', user.id)
       .single();
 
-    if (profileError) throw profileError;
+    if (error) throw error;
 
     return { ...user, profile };
 
@@ -118,7 +111,7 @@ async function getCurrentUser() {
 }
 
 // ========================================
-// VÉRIFIER SI L'UTILISATEUR EST ADMIN
+// VÉRIFIER SI L'UTILISATEUR EST ADMIN (CORRIGÉ)
 // ========================================
 
 async function isAdmin() {
@@ -126,13 +119,12 @@ async function isAdmin() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return false;
 
-    const { data, error } = await supabase
-      .from('users')
+    const { data } = await supabase
+      .from('profiles')
       .select('role')
       .eq('id', user.id)
       .single();
 
-    if (error) throw error;
     return data?.role === 'admin';
 
   } catch (error) {
@@ -159,7 +151,6 @@ function onAuthStateChange(callback) {
     }
   );
 
-  // Retourner une fonction pour se désabonner
   return () => subscription.unsubscribe();
 }
 
@@ -185,13 +176,13 @@ async function resetPassword(email) {
 }
 
 // ========================================
-// METTRE À JOUR LE PROFIL
+// METTRE À JOUR LE PROFIL (CORRIGÉ)
 // ========================================
 
 async function updateProfile(userId, updates) {
   try {
     const { data, error } = await supabase
-      .from('users')
+      .from('profiles')
       .update(updates)
       .eq('id', userId)
       .select()
@@ -209,10 +200,9 @@ async function updateProfile(userId, updates) {
 }
 
 // ========================================
-// EXEMPLE D'UTILISATION DANS UN COMPOSANT
+// EXEMPLE D'UTILISATION
 // ========================================
 
-// Dans votre page d'inscription
 async function handleSignUp() {
   const email = document.getElementById('email').value;
   const password = document.getElementById('password').value;
@@ -223,14 +213,12 @@ async function handleSignUp() {
   const result = await signUp(email, password, username, prenom, nom);
   
   if (result.success) {
-    alert('Inscription réussie ! Vérifiez votre email.');
-    // Rediriger vers la page de connexion ou accueil
+    alert('Inscription réussie !');
   } else {
     alert('Erreur : ' + result.error);
   }
 }
 
-// Dans votre page de connexion
 async function handleSignIn() {
   const email = document.getElementById('email').value;
   const password = document.getElementById('password').value;
@@ -239,23 +227,19 @@ async function handleSignIn() {
   
   if (result.success) {
     alert('Connexion réussie !');
-    // Rediriger vers l'accueil
     window.location.href = '/accueil';
   } else {
     alert('Erreur : ' + result.error);
   }
 }
 
-// Au chargement de l'application
 window.addEventListener('DOMContentLoaded', async () => {
   const user = await getCurrentUser();
   
   if (user) {
     console.log('Utilisateur connecté:', user.profile.username);
-    // Afficher l'interface utilisateur connecté
   } else {
     console.log('Aucun utilisateur connecté');
-    // Afficher page de connexion
   }
 });
 
