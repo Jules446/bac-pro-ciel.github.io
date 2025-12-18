@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-       <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <meta charset="UTF-8">
 <title>Profil Utilisateur</title>
 <style>
@@ -56,6 +56,7 @@ body {
     font-size:18px; 
 }
 .dropdown:hover .dropdown-content { display:block; }
+
 /* --- Profil --- */
 .profile-container {
     max-width:600px;
@@ -145,9 +146,10 @@ body {
       </div>
     </li>
     <li class="dropdown">
-        <a href="#">information</a>
+        <a href="#">Information</a>
         <div class="dropdown-content">
             <a href="actualité.html">Cybersécurité</a>
+        </div>
     </li>
   </ul>
 </header>
@@ -161,7 +163,7 @@ body {
     <p><strong>Date de naissance:</strong> <span id="profilDob"></span></p>
     <p><strong>Nom d'utilisateur:</strong> <span id="profilUsername"></span></p>
     <button class="btn-action" id="editProfileBtn">Modifier mon profil</button>
-    <button class="btn-action" id="logoutBtn">Déconnexion</button>
+    <button class="btn-action" id="logoutBtnProfile">Déconnexion</button>
 </div>
 
 <!-- --- Popup modifier profil --- -->
@@ -172,7 +174,7 @@ body {
         <input type="text" id="editNom" placeholder="Nom">
         <input type="email" id="editEmail" placeholder="Email">
         <input type="date" id="editDob" placeholder="Date de naissance">
-        <input type="password" id="editPassword" placeholder="Mot de passe">
+        <input type="password" id="editPassword" placeholder="Nouveau mot de passe (optionnel)">
         <input type="file" id="editPhoto" accept="image/*">
         <button type="submit">Enregistrer</button>
         <button type="button" id="closePopup">Annuler</button>
@@ -190,11 +192,16 @@ body {
 </div>
 
 <script>
-// --- Vérifier si connecté ---
-let connectedUsername = localStorage.getItem('connectedUser');
-let user = connectedUsername ? JSON.parse(localStorage.getItem(connectedUsername)) : null;
+// ========================================
+// CONFIGURATION SUPABASE
+// ========================================
+const SUPABASE_URL = 'https://TON_URL.supabase.co';
+const SUPABASE_KEY = 'TON_ANON_KEY';
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// --- Références éléments ---
+// ========================================
+// RÉFÉRENCES ÉLÉMENTS DOM
+// ========================================
 const profilPrenom = document.getElementById('profilPrenom');
 const profilNom = document.getElementById('profilNom');
 const profilEmail = document.getElementById('profilEmail');
@@ -205,116 +212,217 @@ const editProfileBtn = document.getElementById('editProfileBtn');
 const editPopup = document.getElementById('editPopup');
 const closePopup = document.getElementById('closePopup');
 const editForm = document.getElementById('editForm');
-const logoutBtn = document.getElementById('logoutBtn');
+const logoutBtnProfile = document.getElementById('logoutBtnProfile');
 const editPhotoInput = document.getElementById('editPhoto');
-const editPrenomInput = document.getElementById('editPrenom');
-const editNomInput = document.getElementById('editNom');
-const editEmailInput = document.getElementById('editEmail');
-const editDobInput = document.getElementById('editDob');
-const editPasswordInput = document.getElementById('editPassword');
-const adminMenu = document.getElementById('adminMenu');
 const loginPopup = document.getElementById('loginPopup');
-const loginPopupForm = document.getElementById('loginPopupForm');
-const popupUsername = document.getElementById('popupUsername');
-const popupPassword = document.getElementById('popupPassword');
 
-// --- Redirection si pas connecté ---
-if(!user){
-    loginPopup.style.display = 'flex';
-} else {
-    if(user.role === 'admin') adminMenu.style.display = 'block';
+let currentUser = null;
+
+// ========================================
+// RÉCUPÉRATION UTILISATEUR CONNECTÉ
+// ========================================
+function getConnectedUserId() {
+    return sessionStorage.getItem('connectedUserId');
 }
 
-// --- Charger affichage ---
-function updateProfileDisplay(){
-    if(!user) return;
+// ========================================
+// CHARGEMENT PROFIL
+// ========================================
+async function loadUserProfile() {
+    const userId = getConnectedUserId();
+    
+    if (!userId) {
+        // Pas connecté, afficher popup de connexion
+        loginPopup.style.display = 'flex';
+        return;
+    }
+
+    try {
+        // Récupérer les données de l'utilisateur
+        const { data: user, error } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', userId)
+            .single();
+
+        if (error || !user) {
+            console.error('Erreur chargement profil:', error);
+            alert('Erreur lors du chargement du profil');
+            sessionStorage.removeItem('connectedUserId');
+            loginPopup.style.display = 'flex';
+            return;
+        }
+
+        currentUser = user;
+        updateProfileDisplay(user);
+
+    } catch (err) {
+        console.error('Erreur:', err);
+        alert('Erreur lors du chargement du profil');
+    }
+}
+
+// ========================================
+// MISE À JOUR AFFICHAGE PROFIL
+// ========================================
+function updateProfileDisplay(user) {
     profilPrenom.textContent = user.prenom || '';
     profilNom.textContent = user.nom || '';
     profilEmail.textContent = user.email || '';
-    profilDob.textContent = user.dob || '';
+    profilDob.textContent = user.dob ? new Date(user.dob).toLocaleDateString('fr-FR') : '';
     profilUsername.textContent = user.username || '';
     profilePic.src = user.photo || "https://via.placeholder.com/150";
 }
-updateProfileDisplay();
 
-// --- Popup modifier ---
-editProfileBtn.onclick = () => { 
-    if(!user) return;
-    editPopup.style.display = 'flex'; 
-    editPrenomInput.value = user.prenom || '';
-    editNomInput.value = user.nom || '';
-    editEmailInput.value = user.email || '';
-    editDobInput.value = user.dob || '';
-    editPasswordInput.value = '';
+// ========================================
+// POPUP MODIFIER PROFIL
+// ========================================
+editProfileBtn.onclick = () => {
+    if (!currentUser) return;
+    
+    editPopup.style.display = 'flex';
+    document.getElementById('editPrenom').value = currentUser.prenom || '';
+    document.getElementById('editNom').value = currentUser.nom || '';
+    document.getElementById('editEmail').value = currentUser.email || '';
+    document.getElementById('editDob').value = currentUser.dob || '';
+    document.getElementById('editPassword').value = '';
     editPhotoInput.value = '';
 };
-closePopup.onclick = () => { editPopup.style.display = 'none'; };
 
-// --- Prévisualisation photo ---
-editPhotoInput.onchange = function(e){
+closePopup.onclick = () => { 
+    editPopup.style.display = 'none'; 
+};
+
+// ========================================
+// PRÉVISUALISATION PHOTO
+// ========================================
+editPhotoInput.onchange = function(e) {
     const file = e.target.files[0];
-    if(file){
+    if (file) {
         const reader = new FileReader();
-        reader.onload = function(evt){ profilePic.src = evt.target.result; };
+        reader.onload = function(evt) { 
+            profilePic.src = evt.target.result; 
+        };
         reader.readAsDataURL(file);
     }
 };
 
-// --- Enregistrer modifications ---
-editForm.onsubmit = e=>{
+// ========================================
+// ENREGISTRER MODIFICATIONS
+// ========================================
+editForm.onsubmit = async (e) => {
     e.preventDefault();
-    if(!user) return;
+    if (!currentUser) return;
 
-    if(editPrenomInput.value) user.prenom = editPrenomInput.value;
-    if(editNomInput.value) user.nom = editNomInput.value;
-    if(editEmailInput.value) user.email = editEmailInput.value;
-    if(editDobInput.value) user.dob = editDobInput.value;
-    if(editPasswordInput.value) user.password = editPasswordInput.value;
+    const updates = {};
+    
+    const newPrenom = document.getElementById('editPrenom').value.trim();
+    const newNom = document.getElementById('editNom').value.trim();
+    const newEmail = document.getElementById('editEmail').value.trim();
+    const newDob = document.getElementById('editDob').value;
+    const newPassword = document.getElementById('editPassword').value.trim();
 
+    if (newPrenom) updates.prenom = newPrenom;
+    if (newNom) updates.nom = newNom;
+    if (newEmail) updates.email = newEmail;
+    if (newDob) updates.dob = newDob;
+    if (newPassword) updates.password = newPassword;
+
+    // Gestion de la photo
     const file = editPhotoInput.files[0];
-    if(file){
+    if (file) {
         const reader = new FileReader();
-        reader.onload = function(evt){
-            user.photo = evt.target.result;
-            localStorage.setItem(user.username, JSON.stringify(user));
-            editPopup.style.display='none';
-            updateProfileDisplay();
+        reader.onload = async function(evt) {
+            updates.photo = evt.target.result;
+            await saveProfile(updates);
         };
         reader.readAsDataURL(file);
     } else {
-        localStorage.setItem(user.username, JSON.stringify(user));
-        editPopup.style.display='none';
-        updateProfileDisplay();
+        await saveProfile(updates);
     }
 };
 
-// --- Déconnexion ---
-logoutBtn.onclick = () => {
-    localStorage.removeItem('connectedUser');
+async function saveProfile(updates) {
+    try {
+        const { data, error } = await supabase
+            .from('users')
+            .update(updates)
+            .eq('id', currentUser.id)
+            .select();
+
+        if (error) {
+            console.error('Erreur mise à jour:', error);
+            alert('Erreur lors de la mise à jour du profil');
+            return;
+        }
+
+        alert('Profil mis à jour avec succès !');
+        editPopup.style.display = 'none';
+        await loadUserProfile(); // Recharger le profil
+
+    } catch (err) {
+        console.error('Erreur:', err);
+        alert('Erreur lors de la mise à jour du profil');
+    }
+}
+
+// ========================================
+// DÉCONNEXION
+// ========================================
+logoutBtnProfile.onclick = () => {
+    sessionStorage.removeItem('connectedUserId');
     window.location.href = "index.html";
 };
 
-// --- Connexion via popup ---
-loginPopupForm.onsubmit = e => {
+// ========================================
+// CONNEXION VIA POPUP
+// ========================================
+document.getElementById('loginPopupForm').onsubmit = async (e) => {
     e.preventDefault();
-    const username = popupUsername.value.trim();
-    const password = popupPassword.value.trim();
-    const stored = localStorage.getItem(username);
+    
+    const username = document.getElementById('popupUsername').value.trim();
+    const password = document.getElementById('popupPassword').value.trim();
 
-    if(!stored){ alert('Utilisateur non trouvé !'); return; }
+    try {
+        const { data: user, error } = await supabase
+            .from('users')
+            .select('*')
+            .eq('username', username)
+            .single();
 
-    const loginUserObj = JSON.parse(stored);
-    if(loginUserObj.password !== password){ alert('Mot de passe incorrect !'); return; }
+        if (error || !user) {
+            alert('Utilisateur non trouvé !');
+            return;
+        }
 
-    localStorage.setItem('connectedUser', loginUserObj.username);
-    user = loginUserObj;
-    loginPopup.style.display = 'none';
-    if(user.role === 'admin') adminMenu.style.display = 'block';
-    updateProfileDisplay();
+        if (user.password !== password) {
+            alert('Mot de passe incorrect !');
+            return;
+        }
+
+        if (user.banned) {
+            alert('Votre compte a été banni !');
+            return;
+        }
+
+        sessionStorage.setItem('connectedUserId', user.id);
+        currentUser = user;
+        loginPopup.style.display = 'none';
+        updateProfileDisplay(user);
+
+    } catch (err) {
+        console.error('Erreur connexion:', err);
+        alert('Erreur lors de la connexion');
+    }
+};
+
+// ========================================
+// CHARGEMENT INITIAL
+// ========================================
+window.onload = async () => {
+    await loadUserProfile();
 };
 </script>
 
 </body>
 </html>
-
-
