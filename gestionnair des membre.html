@@ -162,6 +162,14 @@ header {
 </div>
 
 <script>
+// ========================================
+// CONFIGURATION SUPABASE - VERSION CORRIGÉE
+// ========================================
+const SUPABASE_URL = 'https://bvtzijciriawuajyzovs.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ2dHppamNpcmlhd3Vhanl6b3ZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU5NDM5MzksImV4cCI6MjA4MTUxOTkzOX0.bwECe_OuAKAy-lT73DqTwv91UufDxsgqXxds4sNtRxw'; // ⚠️ Remplacer par votre clé anon
+const { createClient } = supabase;
+const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
 // --- Références ---
 const loginBtn = document.getElementById("loginBtn");
 const logoutBtn = document.getElementById("logoutBtn");
@@ -387,5 +395,6 @@ window.onload = ()=>{
 </script>
 </body>
 </html>
+
 
 
