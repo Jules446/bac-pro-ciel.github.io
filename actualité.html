@@ -72,6 +72,7 @@ body {
     flex-direction: column;
     align-items: center;
     text-align: center;
+    position: relative;
 }
 .newsItem img {
     max-width: 100%;
@@ -99,6 +100,32 @@ body {
     background:#6e82ff;
 }
 
+/* Like button */
+.likeNewsBtn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #4a66ff;
+    border: none;
+    border-radius: 12px;
+    color: white;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: 0.3s;
+}
+.likeNewsBtn:hover {
+    background: #6e82ff;
+    transform: scale(1.05);
+}
+.likeNewsBtn.liked {
+    background: #22c55e;
+    transform: scale(1.1);
+}
+
 /* Bulle ajout news */
 #addNewsBubble {
     position:fixed;
@@ -108,7 +135,7 @@ body {
     height:60px;
     background:#4a66ff;
     border-radius:50%;
-    display:flex;
+    display:none;
     justify-content:center;
     align-items:center;
     font-size:30px;
@@ -134,6 +161,8 @@ body {
     padding:20px;
     border-radius:15px;
     width:400px;
+    max-height: 90vh;
+    overflow-y: auto;
     display:flex;
     flex-direction:column;
     gap:10px;
@@ -141,10 +170,20 @@ body {
 .login-popup input, .login-popup select, .login-popup textarea, .login-popup button {
     padding:10px; border-radius:8px; border:none; font-size:16px;
 }
+.login-popup textarea {
+    min-height: 100px;
+    resize: vertical;
+}
 .login-popup button {
     background:#4a66ff; color:white; cursor:pointer; transition:0.3s;
 }
 .login-popup button:hover { background:#6e82ff; }
+
+@media(max-width:768px){
+    #newsContainer {
+        grid-template-columns: 1fr;
+    }
+}
 </style>
 </head>
 <body>
@@ -187,8 +226,8 @@ body {
 <div class="login-popup" id="newsPopup">
     <form id="formAddNews">
         <h2 id="newsFormTitle">Nouvelle Actualité</h2>
-        <input type="text" id="newsTitle" placeholder="Titre de l'actualité">
-        <textarea id="newsDesc" placeholder="Description"></textarea>
+        <input type="text" id="newsTitle" placeholder="Titre de l'actualité" required>
+        <textarea id="newsDesc" placeholder="Description" required></textarea>
         <input type="file" id="newsImgFile" accept="image/*">
         <input type="text" id="newsImgUrl" placeholder="URL de l'image (optionnel)">
         <input type="text" id="newsUrl" placeholder="URL de redirection (optionnel)">
@@ -216,23 +255,22 @@ body {
         <input type="email" id="signupEmail" placeholder="Email" required>
         <input type="text" id="signupUsername" placeholder="Nom d'utilisateur" required>
         <input type="password" id="signupPassword" placeholder="Mot de passe" required>
-        <select id="signupRole">
-            <option value="client">Client</option>
-            <option value="admin">Admin</option>
-        </select>
         <button type="submit">Créer</button>
         <button type="button" id="closeSignup">Fermer</button>
     </form>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-// --- Initialisation Supabase ---
+// ========================================
+// CONFIGURATION SUPABASE
+// ========================================
 const SUPABASE_URL = 'https://TON_URL.supabase.co';
 const SUPABASE_KEY = 'TON_ANON_KEY';
 const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// --- Références éléments ---
+// ========================================
+// RÉFÉRENCES ÉLÉMENTS
+// ========================================
 const loginBtn = document.getElementById("loginBtn");
 const logoutBtn = document.getElementById("logoutBtn");
 const loginForm = document.getElementById("loginForm");
@@ -245,72 +283,193 @@ const closeNewsPopup = document.getElementById('closeNewsPopup');
 const formAddNews = document.getElementById('formAddNews');
 const newsContainer = document.getElementById('newsContainer');
 const newsFormTitle = document.getElementById('newsFormTitle');
+const adminMenu = document.getElementById('adminMenu');
 
 let editingId = null;
+let currentUser = null;
 let isAdmin = false;
 
-// --- Popups ---
+// ========================================
+// GESTION UTILISATEUR
+// ========================================
+function getConnectedUserId() {
+    return sessionStorage.getItem('connectedUserId');
+}
+
+async function loadCurrentUser() {
+    const userId = getConnectedUserId();
+    if (!userId) {
+        isAdmin = false;
+        addNewsBubble.style.display = 'none';
+        adminMenu.style.display = 'none';
+        return;
+    }
+
+    try {
+        const { data: user, error } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', userId)
+            .single();
+
+        if (error || !user) {
+            isAdmin = false;
+            currentUser = null;
+            return;
+        }
+
+        currentUser = user;
+        isAdmin = user.role === 'admin';
+        
+        if (isAdmin) {
+            addNewsBubble.style.display = 'flex';
+            adminMenu.style.display = 'block';
+        }
+
+        loginBtn.style.display = 'none';
+        logoutBtn.style.display = 'inline-block';
+
+    } catch (err) {
+        console.error('Erreur chargement utilisateur:', err);
+    }
+}
+
+// ========================================
+// POPUPS
+// ========================================
 loginBtn.addEventListener("click", ()=> loginForm.style.display="flex");
 closeLogin.addEventListener("click", ()=> loginForm.style.display="none");
 document.getElementById("signupBtn").addEventListener("click", ()=> signupForm.style.display="flex");
 closeSignup.addEventListener("click", ()=> signupForm.style.display="none");
 
-// --- Connexion ---
+// ========================================
+// CONNEXION
+// ========================================
 document.getElementById("formLogin").addEventListener("submit", async function(e){
     e.preventDefault();
     const username = document.getElementById("loginUsername").value.trim();
     const password = document.getElementById("loginPassword").value.trim();
 
-    // On récupère l'utilisateur depuis Supabase
-    let { data: users, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('username', username)
-        .single();
+    try {
+        const { data: user, error } = await supabase
+            .from('users')
+            .select('*')
+            .eq('username', username)
+            .single();
 
-    if(error || !users){ alert("Utilisateur non trouvé !"); return; }
-    if(users.password !== password){ alert("Mot de passe incorrect !"); return; }
+        if(error || !user){ 
+            alert("Utilisateur non trouvé !"); 
+            return; 
+        }
+        
+        if(user.password !== password){ 
+            alert("Mot de passe incorrect !"); 
+            return; 
+        }
 
-    sessionStorage.setItem("loggedUser", username);
-    alert(`Connexion réussie ! Bienvenue ${users.prenom} ${users.nom}`);
-    loginForm.style.display="none";
-    loginBtn.style.display="none";
-    logoutBtn.style.display="inline-block";
+        if(user.banned){
+            alert("Votre compte a été banni !");
+            return;
+        }
 
-    if(users.role==="admin"){
-        document.getElementById('adminMenu').style.display='block';
-        addNewsBubble.style.display='flex';
-        isAdmin = true;
-    } else {
-        isAdmin = false;
+        sessionStorage.setItem("connectedUserId", user.id);
+        alert(`Connexion réussie ! Bienvenue ${user.prenom} ${user.nom}`);
+        loginForm.style.display="none";
+        await loadCurrentUser();
+        loadNews();
+
+    } catch(err){
+        console.error('Erreur connexion:', err);
+        alert('Erreur lors de la connexion');
     }
-    loadNews();
 });
 
-// --- Déconnexion ---
+// ========================================
+// INSCRIPTION
+// ========================================
+document.getElementById("formSignup").addEventListener("submit", async function(e){
+    e.preventDefault();
+    
+    const prenom = document.getElementById("signupPrenom").value.trim();
+    const nom = document.getElementById("signupNom").value.trim();
+    const email = document.getElementById("signupEmail").value.trim();
+    const username = document.getElementById("signupUsername").value.trim();
+    const password = document.getElementById("signupPassword").value.trim();
+
+    try {
+        // Vérifier si username existe
+        const { data: existing } = await supabase
+            .from('users')
+            .select('id')
+            .eq('username', username)
+            .single();
+
+        if(existing){
+            alert("Ce nom d'utilisateur existe déjà !");
+            return;
+        }
+
+        // Créer l'utilisateur
+        const { error } = await supabase
+            .from('users')
+            .insert([{
+                prenom,
+                nom,
+                email,
+                username,
+                password,
+                role: 'client'
+            }]);
+
+        if(error){
+            console.error('Erreur inscription:', error);
+            alert('Erreur lors de la création du compte');
+            return;
+        }
+
+        alert('Compte créé avec succès !');
+        signupForm.style.display = 'none';
+        document.getElementById('formSignup').reset();
+
+    } catch(err){
+        console.error('Erreur inscription:', err);
+        alert('Erreur lors de la création du compte');
+    }
+});
+
+// ========================================
+// DÉCONNEXION
+// ========================================
 logoutBtn.addEventListener("click", ()=>{
-    sessionStorage.removeItem("loggedUser");
-    loginBtn.style.display="inline-block";
-    logoutBtn.style.display="none";
-    document.getElementById('adminMenu').style.display='none';
-    addNewsBubble.style.display='none';
-    isAdmin = false;
-    loadNews();
+    sessionStorage.removeItem("connectedUserId");
+    location.reload();
 });
 
-// --- Bulle ajout news ---
+// ========================================
+// GESTION NEWS
+// ========================================
 addNewsBubble.addEventListener('click', ()=>{
+    if(!isAdmin){ 
+        alert("Seuls les admins peuvent ajouter des actualités"); 
+        return; 
+    }
     newsFormTitle.textContent = "Nouvelle Actualité";
     formAddNews.reset();
     editingId = null;
     newsPopup.style.display='flex';
 });
+
 closeNewsPopup.addEventListener('click', ()=> newsPopup.style.display='none');
 
-// --- Ajouter / Modifier news ---
+// ========================================
+// AJOUTER / MODIFIER NEWS
+// ========================================
 formAddNews.addEventListener('submit', async (e)=>{
     e.preventDefault();
-    if(!isAdmin){ alert("Seuls les admins peuvent modifier/ajouter"); return; }
+    if(!isAdmin){ 
+        alert("Seuls les admins peuvent modifier/ajouter"); 
+        return; 
+    }
 
     const title = document.getElementById('newsTitle').value.trim();
     const desc = document.getElementById('newsDesc').value.trim();
@@ -318,9 +477,8 @@ formAddNews.addEventListener('submit', async (e)=>{
     const urlInput = document.getElementById('newsImgUrl').value.trim();
     const linkUrl = document.getElementById('newsUrl').value.trim();
 
-    if(!title && !desc && !fileInput.files[0] && !urlInput) return alert("Rien à enregistrer !");
-
     let imgData = '';
+    
     if(fileInput.files[0]){
         const reader = new FileReader();
         reader.onload = async function(evt){
@@ -335,104 +493,228 @@ formAddNews.addEventListener('submit', async (e)=>{
 });
 
 async function saveNewsToSupabase(title, desc, imgData, url){
-    if(editingId){
-        // Modification
-        const { error } = await supabase
-            .from('actualites')
-            .update({ title, description: desc, image: imgData, link: url })
-            .eq('id', editingId);
-        if(error) return alert("Erreur lors de la modification !");
-    } else {
-        // Ajout
-        const { error } = await supabase
-            .from('actualites')
-            .insert([{ title, description: desc, image: imgData, link: url, created_at: new Date() }]);
-        if(error) return alert("Erreur lors de l'ajout !");
+    try {
+        if(editingId){
+            // Modification
+            const { error } = await supabase
+                .from('actualites')
+                .update({ 
+                    title, 
+                    description: desc, 
+                    image: imgData, 
+                    link: url 
+                })
+                .eq('id', editingId);
+                
+            if(error) {
+                console.error('Erreur modification:', error);
+                alert("Erreur lors de la modification !");
+                return;
+            }
+        } else {
+            // Ajout
+            const { error } = await supabase
+                .from('actualites')
+                .insert([{ 
+                    title, 
+                    description: desc, 
+                    image: imgData, 
+                    link: url, 
+                    author_id: currentUser.id,
+                    admin_uid: currentUser.id
+                }]);
+                
+            if(error) {
+                console.error('Erreur ajout:', error);
+                alert("Erreur lors de l'ajout !");
+                return;
+            }
+        }
+        
+        newsPopup.style.display='none';
+        formAddNews.reset();
+        loadNews();
+        
+    } catch(err){
+        console.error('Erreur sauvegarde:', err);
+        alert('Erreur lors de la sauvegarde');
     }
-    newsPopup.style.display='none';
-    formAddNews.reset();
-    loadNews();
 }
 
-// --- Affichage news ---
+// ========================================
+// AFFICHAGE NEWS
+// ========================================
 async function loadNews(){
-    const { data: newsList, error } = await supabase
-        .from('actualites')
-        .select('*')
-        .order('created_at', { ascending: false });
+    try {
+        const { data: newsList, error } = await supabase
+            .from('actualites')
+            .select('*')
+            .order('created_at', { ascending: false });
 
-    if(error){
+        if(error){
+            newsContainer.innerHTML = '<p>Erreur de chargement.</p>';
+            console.error('Erreur chargement news:', error);
+            return;
+        }
+
+        newsContainer.innerHTML = '';
+        
+        if(newsList.length === 0){ 
+            newsContainer.innerHTML = '<p style="grid-column: 1/-1; text-align:center;">Aucune actualité pour le moment.</p>'; 
+            return; 
+        }
+
+        for(const item of newsList){
+            const likesCount = await getLikesCount(item.id);
+            const isLiked = await checkIfLiked(item.id);
+            
+            const div = document.createElement('div');
+            div.className = 'newsItem';
+            
+            let imgHTML = item.image ? `<img src="${item.image}" alt="image">` : '';
+            let linkHTML = item.link ? `<p><a href="${item.link}" target="_blank" style="color:#4a66ff;">Voir l'article</a></p>` : '';
+            let modifyButton = isAdmin ? `<button onclick="editNews('${item.id}')">Modifier</button>` : '';
+            let likeButton = `
+                <button class="likeNewsBtn ${isLiked ? 'liked' : ''}" onclick="toggleLikeNews('${item.id}')">
+                    👍 <span id="likes-${item.id}">${likesCount}</span>
+                </button>
+            `;
+            
+            div.innerHTML = `
+                ${likeButton}
+                <h3>${item.title}</h3>
+                <p>${item.description}</p>
+                ${imgHTML}
+                ${linkHTML}
+                ${modifyButton}
+            `;
+            newsContainer.appendChild(div);
+        }
+        
+    } catch(err){
+        console.error('Erreur chargement news:', err);
         newsContainer.innerHTML = '<p>Erreur de chargement.</p>';
+    }
+}
+
+// ========================================
+// SYSTÈME DE LIKES
+// ========================================
+async function getLikesCount(newsId) {
+    try {
+        const { count, error } = await supabase
+            .from('actualite_likes')
+            .select('*', { count: 'exact', head: true })
+            .eq('actualite_id', newsId);
+            
+        if(error) return 0;
+        return count || 0;
+    } catch(err){
+        return 0;
+    }
+}
+
+async function checkIfLiked(newsId) {
+    const userId = getConnectedUserId();
+    if(!userId) return false;
+    
+    try {
+        const { data, error } = await supabase
+            .from('actualite_likes')
+            .select('id')
+            .eq('actualite_id', newsId)
+            .eq('user_id', userId)
+            .single();
+            
+        return !!data;
+    } catch(err){
+        return false;
+    }
+}
+
+async function toggleLikeNews(newsId) {
+    const userId = getConnectedUserId();
+    if(!userId){
+        alert('Vous devez être connecté pour liker');
         return;
     }
-
-    newsContainer.innerHTML = '';
-    if(newsList.length === 0){ newsContainer.innerHTML = '<p>Aucune actualité pour le moment.</p>'; return; }
-
-    newsList.forEach(item=>{
-        const div = document.createElement('div');
-        div.className = 'newsItem';
-        let imgHTML = item.image ? `<img src="${item.image}" alt="image">` : '';
-        let linkHTML = item.link ? `<p><a href="${item.link}" target="_blank" style="color:#4a66ff;">Voir l'article</a></p>` : '';
-        let modifyButton = isAdmin ? `<button onclick="editNews(${item.id})">Modifier</button>` : '';
-        div.innerHTML = `
-            <h3>${item.title}</h3>
-            <p>${item.description}</p>
-            ${imgHTML}
-            ${linkHTML}
-            ${modifyButton}
-        `;
-        newsContainer.appendChild(div);
-    });
-}
-
-// --- Modifier news ---
-async function editNews(id){
-    if(!isAdmin){ alert("Seuls les admins peuvent modifier"); return; }
-    const { data: item, error } = await supabase
-        .from('actualites')
-        .select('*')
-        .eq('id', id)
-        .single();
-
-    if(error){ alert("Erreur récupération news !"); return; }
-
-    editingId = id;
-    newsFormTitle.textContent = "Modifier Actualité";
-    document.getElementById('newsTitle').value = item.title;
-    document.getElementById('newsDesc').value = item.description;
-    document.getElementById('newsImgUrl').value = item.image||'';
-    document.getElementById('newsUrl').value = item.link||'';
-    newsPopup.style.display = 'flex';
-}
-
-// --- Au chargement ---
-window.onload = async ()=>{
-    const username = sessionStorage.getItem("loggedUser");
-    if(username){
-        const { data: user, error } = await supabase.from('users').select('*').eq('username', username).single();
-        if(user && user.role==="admin"){
-            addNewsBubble.style.display='flex';
-            document.getElementById('adminMenu').style.display='block';
-            isAdmin = true;
+    
+    try {
+        const isLiked = await checkIfLiked(newsId);
+        
+        if(isLiked){
+            // Supprimer le like
+            const { error } = await supabase
+                .from('actualite_likes')
+                .delete()
+                .eq('actualite_id', newsId)
+                .eq('user_id', userId);
+                
+            if(error) throw error;
         } else {
-            addNewsBubble.style.display='none';
-            document.getElementById('adminMenu').style.display='none';
-            isAdmin = false;
+            // Ajouter le like
+            const { error } = await supabase
+                .from('actualite_likes')
+                .insert([{
+                    actualite_id: newsId,
+                    user_id: userId
+                }]);
+                
+            if(error) throw error;
         }
-        loginBtn.style.display='none';
-        logoutBtn.style.display='inline-block';
-    } else {
-        addNewsBubble.style.display='none';
-        document.getElementById('adminMenu').style.display='none';
-        isAdmin = false;
+        
+        // Recharger les news pour mettre à jour l'affichage
+        loadNews();
+        
+    } catch(err){
+        console.error('Erreur like:', err);
+        alert('Erreur lors du like');
     }
+}
+
+// ========================================
+// MODIFIER NEWS
+// ========================================
+async function editNews(id){
+    if(!isAdmin){ 
+        alert("Seuls les admins peuvent modifier"); 
+        return; 
+    }
+    
+    try {
+        const { data: item, error } = await supabase
+            .from('actualites')
+            .select('*')
+            .eq('id', id)
+            .single();
+
+        if(error){ 
+            alert("Erreur récupération news !"); 
+            return; 
+        }
+
+        editingId = id;
+        newsFormTitle.textContent = "Modifier Actualité";
+        document.getElementById('newsTitle').value = item.title;
+        document.getElementById('newsDesc').value = item.description;
+        document.getElementById('newsImgUrl').value = item.image||'';
+        document.getElementById('newsUrl').value = item.link||'';
+        newsPopup.style.display = 'flex';
+        
+    } catch(err){
+        console.error('Erreur édition:', err);
+        alert('Erreur lors de la récupération de l\'actualité');
+    }
+}
+
+// ========================================
+// CHARGEMENT INITIAL
+// ========================================
+window.onload = async ()=>{
+    await loadCurrentUser();
     loadNews();
 };
 </script>
 
-
 </body>
 </html>
-
-
