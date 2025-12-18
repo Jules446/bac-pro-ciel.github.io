@@ -1,220 +1,317 @@
-// --- Références éléments ---
-const loginBtn = document.getElementById('loginBtn');
-const signupBtn = document.getElementById('signupBtn');
-const logoutBtn = document.getElementById('logoutBtn');
-const loginForm = document.getElementById('loginForm');
-const signupForm = document.getElementById('signupForm');
-const closeLogin = document.getElementById('closeLogin');
-const closeSignup = document.getElementById('closeSignup');
-const userDisplay = document.getElementById('userDisplay');
-const adminLink = document.getElementById('adminLink'); 
-const membersContainer = document.getElementById('membersContainer');
-const membersList = document.getElementById('membersList');
+-- ========================================
+-- SCRIPT SQL COMPLET POUR SUPABASE
+-- Projet BAC PRO CIEL
+-- ========================================
 
-// --- Créer admin par défaut ---
-if(!localStorage.getItem("admin")){
-    localStorage.setItem("admin", JSON.stringify({username:"admin", password:"admin123", role:"admin"}));
-}
-if(!localStorage.getItem("Jules")){
-    localStorage.setItem("Jules", JSON.stringify({username:"Jules", password:"Jules44690", role:"admin"}));
-}
+-- 1️⃣ CRÉATION DE LA TABLE USERS
+-- ========================================
+CREATE TABLE users (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    prenom TEXT,
+    nom TEXT,
+    email TEXT UNIQUE,
+    username TEXT UNIQUE NOT NULL,
+    password TEXT NOT NULL,
+    role TEXT DEFAULT 'client' CHECK (role IN ('client', 'admin')),
+    dob DATE,
+    photo TEXT,
+    banned BOOLEAN DEFAULT false,
+    protected BOOLEAN DEFAULT false,
+    created_at TIMESTAMPTZ DEFAULT now()
+);
 
-// --- Popups login/signup ---
-loginBtn.addEventListener('click', () => loginForm.style.display='flex');
-signupBtn.addEventListener('click', () => signupForm.style.display='flex');
-closeLogin.addEventListener('click', () => loginForm.style.display='none');
-closeSignup.addEventListener('click', () => signupForm.style.display='none');
+-- 2️⃣ CRÉATION DE LA TABLE ACTUALITES
+-- ========================================
+CREATE TABLE actualites (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    title TEXT NOT NULL,
+    description TEXT,
+    image TEXT,
+    link TEXT,
+    author_id UUID REFERENCES users(id) ON DELETE SET NULL,
+    admin_uid UUID REFERENCES users(id) ON DELETE CASCADE,
+    created_at TIMESTAMPTZ DEFAULT now()
+);
 
-// --- Fonction pour vérifier s'il y a des comptes ---
-function hasAccounts(){
-    return Object.keys(localStorage).some(key => {
-        try {
-            const u = JSON.parse(localStorage.getItem(key));
-            return u && u.username;
-        } catch(e) { return false; }
-    });
-}
+-- 3️⃣ CRÉATION DE LA TABLE COMMENTS
+-- ========================================
+CREATE TABLE comments (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    actualite_id UUID REFERENCES actualites(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    username TEXT NOT NULL,
+    text TEXT NOT NULL,
+    hidden BOOLEAN DEFAULT false,
+    created_at TIMESTAMPTZ DEFAULT now()
+);
 
-// --- Création compte ---
-document.getElementById('formSignup').addEventListener('submit', e=>{
-    e.preventDefault();
-    const prenom = document.getElementById('signupPrenom').value.trim();
-    const nom = document.getElementById('signupNom').value.trim();
-    const dob = document.getElementById('signupDob').value;
-    const email = document.getElementById('signupEmail').value.trim();
-    const username = document.getElementById('signupUsername').value.trim();
-    const password = document.getElementById('signupPassword').value.trim();
+-- 4️⃣ CRÉATION DE LA TABLE ACTUALITE_LIKES
+-- ========================================
+CREATE TABLE actualite_likes (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    actualite_id UUID REFERENCES actualites(id) ON DELETE CASCADE NOT NULL,
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT now(),
+    UNIQUE(actualite_id, user_id)
+);
 
-    if(localStorage.getItem(username)){
-        alert('Nom d’utilisateur déjà utilisé !');
-        return;
-    }
+-- 5️⃣ CRÉATION DE LA TABLE COMMENT_LIKES
+-- ========================================
+CREATE TABLE comment_likes (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    comment_id UUID REFERENCES comments(id) ON DELETE CASCADE NOT NULL,
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT now(),
+    UNIQUE(comment_id, user_id)
+);
 
-    const user = { prenom, nom, dob, email, username, password, role:'client', banned:false, createdAt:new Date().toLocaleDateString() };
-    localStorage.setItem(username, JSON.stringify(user));
-    alert('Compte créé ! Vous pouvez maintenant vous connecter.');
-    signupForm.style.display='none';
-});
+-- 6️⃣ CRÉATION DE LA TABLE MAIN_TEXT_LIKES (pour le texte principal)
+-- ========================================
+CREATE TABLE main_text_likes (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE NOT NULL,
+    page TEXT NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT now(),
+    UNIQUE(user_id, page)
+);
 
-// --- Connexion ---
-document.getElementById('formLogin').addEventListener('submit', e=>{
-    e.preventDefault();
-    const username = document.getElementById('loginUsername').value.trim();
-    const password = document.getElementById('loginPassword').value.trim();
-    const stored = localStorage.getItem(username);
+-- 7️⃣ CRÉATION DE LA TABLE REPLIES (pour les réponses aux commentaires)
+-- ========================================
+CREATE TABLE replies (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    comment_id UUID REFERENCES comments(id) ON DELETE CASCADE NOT NULL,
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    username TEXT NOT NULL,
+    text TEXT NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT now()
+);
 
-    if(!stored){ alert('Utilisateur non trouvé !'); return; }
-    const user = JSON.parse(stored);
-    if(user.password !== password){ alert('Mot de passe incorrect !'); return; }
-    if(user.banned){ alert("Compte banni !"); return; }
+-- 8️⃣ CRÉATION DE LA TABLE REPLY_LIKES
+-- ========================================
+CREATE TABLE reply_likes (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    reply_id UUID REFERENCES replies(id) ON DELETE CASCADE NOT NULL,
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT now(),
+    UNIQUE(reply_id, user_id)
+);
 
-    loginUser(user);
-});
+-- ========================================
+-- ACTIVATION DE ROW LEVEL SECURITY (RLS)
+-- ========================================
 
-// --- Gérer l'utilisateur connecté ---
-function loginUser(user){
-    localStorage.setItem('connectedUser', user.username);
-    loginForm.style.display='none';
-    loginBtn.style.display='none';
-    signupBtn.style.display='none';
-    logoutBtn.style.display='inline-block';
-    userDisplay.textContent = `Bienvenue, ${user.prenom} ${user.nom} (${user.role}) !`;
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE actualites ENABLE ROW LEVEL SECURITY;
+ALTER TABLE comments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE actualite_likes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE comment_likes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE main_text_likes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE replies ENABLE ROW LEVEL SECURITY;
+ALTER TABLE reply_likes ENABLE ROW LEVEL SECURITY;
 
-    if(user.role === 'admin'){
-        if(adminLink) adminLink.style.display='inline-block';
-        displayMembers();
-    }
-}
+-- ========================================
+-- POLICIES POUR LA TABLE USERS
+-- ========================================
 
-// --- Déconnexion ---
-logoutBtn.addEventListener('click', ()=>{
-    localStorage.removeItem('connectedUser');
-    loginBtn.style.display='inline-block';
-    signupBtn.style.display='inline-block';
-    logoutBtn.style.display='none';
-    if(adminLink) adminLink.style.display='none';
-    userDisplay.textContent='';
-    if(membersContainer) membersContainer.style.display='none';
-});
+-- Lecture : tous peuvent lire les utilisateurs non bannis
+CREATE POLICY "Lecture publique des utilisateurs"
+ON users FOR SELECT
+USING (banned = false);
 
-// --- Gestion membres (admin) ---
-function displayMembers(){
-    membersContainer.style.display='block';
-    membersList.innerHTML='';
+-- Création : tout le monde peut créer un compte
+CREATE POLICY "Inscription publique"
+ON users FOR INSERT
+WITH CHECK (true);
 
-    Object.keys(localStorage).forEach(key=>{
-        try{
-            const user = JSON.parse(localStorage.getItem(key));
-            if(!user.username || key==='connectedUser') return;
+-- Modification : uniquement son propre profil ou admin
+CREATE POLICY "Modification de son profil"
+ON users FOR UPDATE
+USING (id = auth.uid() OR 
+       EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND role = 'admin'));
 
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${user.username}</td>
-                <td>
-                    <select onchange="changeRole('${user.username}', this.value)">
-                        <option value="client" ${user.role==='client'?'selected':''}>Client</option>
-                        <option value="admin" ${user.role==='admin'?'selected':''}>Admin</option>
-                    </select>
-                </td>
-                <td>
-                    <button class="member-btn delete" onclick="deleteMember('${user.username}')">Supprimer</button>
-                    <button class="member-btn reset" onclick="resetPassword('${user.username}')">Réinit MDP</button>
-                </td>
-            `;
-            membersList.appendChild(tr);
-        }catch(e){}
-    });
-}
+-- Suppression : seulement les admins (sauf comptes protégés)
+CREATE POLICY "Suppression admin seulement"
+ON users FOR DELETE
+USING (protected = false AND 
+       EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND role = 'admin'));
 
-function deleteMember(username){
-    if(confirm('Voulez-vous vraiment supprimer cet utilisateur ?')){
-        localStorage.removeItem(username);
-        displayMembers();
-    }
-}
+-- ========================================
+-- POLICIES POUR LA TABLE ACTUALITES
+-- ========================================
 
-function changeRole(username, newRole){
-    const user = JSON.parse(localStorage.getItem(username));
-    user.role = newRole;
-    localStorage.setItem(username, JSON.stringify(user));
-    displayMembers();
-}
+-- Lecture : tout le monde peut lire les actualités
+CREATE POLICY "Lecture publique des actualités"
+ON actualites FOR SELECT
+USING (true);
 
-function resetPassword(username){
-    const newPass = prompt(`Nouveau mot de passe pour ${username} :`);
-    if(!newPass) return;
-    const user = JSON.parse(localStorage.getItem(username));
-    user.password = newPass;
-    localStorage.setItem(username, JSON.stringify(user));
-    alert(`Mot de passe de ${username} réinitialisé !`);
-    displayMembers();
-}
+-- Création : seulement les admins
+CREATE POLICY "Création par admin uniquement"
+ON actualites FOR INSERT
+WITH CHECK (EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND role = 'admin'));
 
-// --- Popup automatique si pas connecté ---
-function showLoginPopup(){
-    const popup = document.createElement('div');
-    popup.id = "autoLoginPopup";
-    popup.style.position = 'fixed';
-    popup.style.top = '0';
-    popup.style.left = '0';
-    popup.style.width = '100%';
-    popup.style.height = '100%';
-    popup.style.background = 'rgba(0,0,0,0.7)';
-    popup.style.display = 'flex';
-    popup.style.justifyContent = 'center';
-    popup.style.alignItems = 'center';
-    popup.style.zIndex = '1000';
+-- Modification : seulement l'admin qui a créé l'actualité
+CREATE POLICY "Modification par l'auteur admin"
+ON actualites FOR UPDATE
+USING (admin_uid = auth.uid() OR 
+       EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND role = 'admin'));
 
-    popup.innerHTML = `
-        <div style="background:#1a1a2e;padding:30px;border-radius:20px;text-align:center;color:white;">
-            <h2>Connexion requise</h2>
-            <p>Vous devez vous connecter pour accéder aux fonctionnalités.</p>
-            <button id="popupLoginBtn" style="padding:12px 25px;border-radius:25px;background:#4a66ff;color:white;border:none;cursor:pointer;margin-top:10px;">Se connecter</button>
-        </div>
-    `;
-    document.body.appendChild(popup);
+-- Suppression : seulement l'admin qui a créé l'actualité
+CREATE POLICY "Suppression par l'auteur admin"
+ON actualites FOR DELETE
+USING (admin_uid = auth.uid() OR 
+       EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND role = 'admin'));
 
-    document.getElementById('popupLoginBtn').onclick = () => {
-        popup.remove();
-        loginForm.style.display = 'flex';
-    };
-}
+-- ========================================
+-- POLICIES POUR LA TABLE COMMENTS
+-- ========================================
 
-// --- Initialisation au chargement ---
-window.addEventListener('load', ()=>{
-    if(!hasAccounts()){
-        loginBtn.style.display = 'none';
-        signupBtn.style.display = 'inline-block';
-        alert("Aucun compte existant. Veuillez créer un compte.");
-    } else {
-        loginBtn.style.display = 'inline-block';
-        signupBtn.style.display = 'inline-block';
-    }
+-- Lecture : tout le monde peut lire les commentaires non masqués
+CREATE POLICY "Lecture publique des commentaires"
+ON comments FOR SELECT
+USING (hidden = false OR 
+       EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND role = 'admin'));
 
-    const connectedUsername = localStorage.getItem('connectedUser');
-    if(connectedUsername){
-        const user = JSON.parse(localStorage.getItem(connectedUsername));
-        if(user) loginUser(user);
-    } else {
-        // Si personne n'est connecté, afficher popup
-        showLoginPopup();
-    }
-});
+-- Création : utilisateurs connectés peuvent commenter
+CREATE POLICY "Création de commentaires"
+ON comments FOR INSERT
+WITH CHECK (auth.uid() IS NOT NULL);
 
-// --- Likes texte principal ---
-const likeBtn = document.getElementById("likeMainText");
-const mainTextLikesSpan = document.getElementById("mainTextLikes");
-let mainTextLikes = parseInt(localStorage.getItem("mainTextLikes") || 0);
-let likedUsers = JSON.parse(localStorage.getItem("mainTextLikedUsers") || "[]");
-mainTextLikesSpan.textContent = mainTextLikes;
+-- Modification : seulement l'auteur ou admin
+CREATE POLICY "Modification commentaire"
+ON comments FOR UPDATE
+USING (user_id = auth.uid() OR 
+       EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND role = 'admin'));
 
-likeBtn.onclick = () => {
-    const user = getLoggedUsername();
-    if(!user){ alert("Connectez-vous pour liker !"); return; }
-    if(likedUsers.includes(user)){ alert("Vous avez déjà liké ce texte !"); return; }
-    mainTextLikes++;
-    likedUsers.push(user);
-    localStorage.setItem("mainTextLikes", mainTextLikes);
-    localStorage.setItem("mainTextLikedUsers", JSON.stringify(likedUsers));
-    mainTextLikesSpan.textContent = mainTextLikes;
-};
+-- Suppression : seulement l'auteur ou admin
+CREATE POLICY "Suppression commentaire"
+ON comments FOR DELETE
+USING (user_id = auth.uid() OR 
+       EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND role = 'admin'));
+
+-- ========================================
+-- POLICIES POUR LA TABLE ACTUALITE_LIKES
+-- ========================================
+
+-- Lecture : tout le monde peut voir les likes
+CREATE POLICY "Lecture publique likes actualités"
+ON actualite_likes FOR SELECT
+USING (true);
+
+-- Création : utilisateur connecté peut liker
+CREATE POLICY "Créer un like sur actualité"
+ON actualite_likes FOR INSERT
+WITH CHECK (user_id = auth.uid());
+
+-- Suppression : seulement son propre like
+CREATE POLICY "Supprimer son like sur actualité"
+ON actualite_likes FOR DELETE
+USING (user_id = auth.uid());
+
+-- ========================================
+-- POLICIES POUR LA TABLE COMMENT_LIKES
+-- ========================================
+
+-- Lecture : tout le monde peut voir les likes
+CREATE POLICY "Lecture publique likes commentaires"
+ON comment_likes FOR SELECT
+USING (true);
+
+-- Création : utilisateur connecté peut liker
+CREATE POLICY "Créer un like sur commentaire"
+ON comment_likes FOR INSERT
+WITH CHECK (user_id = auth.uid());
+
+-- Suppression : seulement son propre like
+CREATE POLICY "Supprimer son like sur commentaire"
+ON comment_likes FOR DELETE
+USING (user_id = auth.uid());
+
+-- ========================================
+-- POLICIES POUR LA TABLE MAIN_TEXT_LIKES
+-- ========================================
+
+-- Lecture : tout le monde
+CREATE POLICY "Lecture publique likes texte principal"
+ON main_text_likes FOR SELECT
+USING (true);
+
+-- Création : utilisateur connecté
+CREATE POLICY "Créer un like sur texte principal"
+ON main_text_likes FOR INSERT
+WITH CHECK (user_id = auth.uid());
+
+-- Suppression : son propre like
+CREATE POLICY "Supprimer son like sur texte principal"
+ON main_text_likes FOR DELETE
+USING (user_id = auth.uid());
+
+-- ========================================
+-- POLICIES POUR LA TABLE REPLIES
+-- ========================================
+
+-- Lecture : tout le monde
+CREATE POLICY "Lecture publique des réponses"
+ON replies FOR SELECT
+USING (true);
+
+-- Création : utilisateur connecté
+CREATE POLICY "Créer une réponse"
+ON replies FOR INSERT
+WITH CHECK (auth.uid() IS NOT NULL);
+
+-- Modification : auteur ou admin
+CREATE POLICY "Modifier sa réponse"
+ON replies FOR UPDATE
+USING (user_id = auth.uid() OR 
+       EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND role = 'admin'));
+
+-- Suppression : auteur ou admin
+CREATE POLICY "Supprimer sa réponse"
+ON replies FOR DELETE
+USING (user_id = auth.uid() OR 
+       EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND role = 'admin'));
+
+-- ========================================
+-- POLICIES POUR LA TABLE REPLY_LIKES
+-- ========================================
+
+-- Lecture : tout le monde
+CREATE POLICY "Lecture publique likes réponses"
+ON reply_likes FOR SELECT
+USING (true);
+
+-- Création : utilisateur connecté
+CREATE POLICY "Créer un like sur réponse"
+ON reply_likes FOR INSERT
+WITH CHECK (user_id = auth.uid());
+
+-- Suppression : son propre like
+CREATE POLICY "Supprimer son like sur réponse"
+ON reply_likes FOR DELETE
+USING (user_id = auth.uid());
+
+-- ========================================
+-- CRÉATION DU SUPER ADMIN PAR DÉFAUT
+-- ========================================
+
+INSERT INTO users (username, password, prenom, nom, role, protected, banned)
+VALUES ('SUPERADMIN', 'MASTER', 'Super', 'Admin', 'admin', true, false)
+ON CONFLICT (username) DO NOTHING;
+
+-- ========================================
+-- INDEX POUR OPTIMISER LES PERFORMANCES
+-- ========================================
+
+CREATE INDEX idx_users_username ON users(username);
+CREATE INDEX idx_users_email ON users(email);
+CREATE INDEX idx_actualites_created_at ON actualites(created_at DESC);
+CREATE INDEX idx_comments_actualite_id ON comments(actualite_id);
+CREATE INDEX idx_comments_user_id ON comments(user_id);
+CREATE INDEX idx_actualite_likes_actualite_id ON actualite_likes(actualite_id);
+CREATE INDEX idx_actualite_likes_user_id ON actualite_likes(user_id);
+CREATE INDEX idx_comment_likes_comment_id ON comment_likes(comment_id);
+CREATE INDEX idx_replies_comment_id ON replies(comment_id);
+
+-- ========================================
+-- FIN DU SCRIPT
+-- ========================================
