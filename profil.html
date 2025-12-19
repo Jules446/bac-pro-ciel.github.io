@@ -13,7 +13,6 @@ body {
     min-height:100vh;
 }
 
-/* --- Menu déroulant --- */
 .menu-bar { 
     background:#4a66ff; 
     padding:20px; 
@@ -57,7 +56,6 @@ body {
 }
 .dropdown:hover .dropdown-content { display:block; }
 
-/* --- Profil --- */
 .profile-container {
     max-width:600px;
     margin:50px auto;
@@ -91,7 +89,6 @@ body {
 }
 .btn-action:hover { background:#6e82ff; }
 
-/* --- Popup --- */
 .popup {
     display:none;
     position:fixed;
@@ -126,7 +123,6 @@ body {
 </head>
 <body>
 
-<!-- Menu -->
 <header class="menu-bar">
   <ul>
     <li class="dropdown">
@@ -154,7 +150,6 @@ body {
   </ul>
 </header>
 
-<!-- --- Profil utilisateur --- -->
 <div class="profile-container" id="profileContainer">
     <img id="profilePic" src="https://via.placeholder.com/150" alt="Photo de profil">
     <p><strong>Prénom:</strong> <span id="profilPrenom"></span></p>
@@ -166,7 +161,6 @@ body {
     <button class="btn-action" id="logoutBtnProfile">Déconnexion</button>
 </div>
 
-<!-- --- Popup modifier profil --- -->
 <div class="popup" id="editPopup">
     <form id="editForm">
         <h2 style="text-align:center;color:white;">Modifier le profil</h2>
@@ -181,7 +175,6 @@ body {
     </form>
 </div>
 
-<!-- --- Popup connexion si pas connecté --- -->
 <div class="popup" id="loginPopup">
     <form id="loginPopupForm">
         <h2 style="text-align:center;color:white;">Connexion requise</h2>
@@ -192,16 +185,11 @@ body {
 </div>
 
 <script>
-// ========================================
-// CONFIGURATION SUPABASE - VERSION CORRIGÉE
-// ========================================
 const SUPABASE_URL = 'https://bvtzijciriawuajyzovs.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ2dHppamNpcmlhd3Vhanl6b3ZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU5NDM5MzksImV4cCI6MjA4MTUxOTkzOX0.bwECe_OuAKAy-lT73DqTwv91UufDxsgqXxds4sNtRxw'; // ⚠️ Remplacer par votre clé anon
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ2dHppamNpcmlhd3Vhanl6b3ZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU5NDM5MzksImV4cCI6MjA4MTUxOTkzOX0.bwECe_OuAKAy-lT73DqTwv91UufDxsgqXxds4sNtRxw';
 const { createClient } = supabase;
 const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-// ========================================
-// RÉFÉRENCES ÉLÉMENTS DOM
-// ========================================
+
 const profilPrenom = document.getElementById('profilPrenom');
 const profilNom = document.getElementById('profilNom');
 const profilEmail = document.getElementById('profilEmail');
@@ -216,75 +204,53 @@ const logoutBtnProfile = document.getElementById('logoutBtnProfile');
 const editPhotoInput = document.getElementById('editPhoto');
 const loginPopup = document.getElementById('loginPopup');
 
-let currentUser = null;
-
-// ========================================
-// RÉCUPÉRATION UTILISATEUR CONNECTÉ
-// ========================================
-function getConnectedUserId() {
-    return sessionStorage.getItem('connectedUserId');
+async function getSession() {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    return session;
 }
 
-// ========================================
-// CHARGEMENT PROFIL
-// ========================================
+async function getCurrentProfile() {
+    const session = await getSession();
+    if (!session) return null;
+
+    const { data: profile } = await supabaseClient
+        .from('profiles')
+        .select('*')
+        .eq('id', session.user.id)
+        .single();
+
+    return profile;
+}
+
 async function loadUserProfile() {
-    const userId = getConnectedUserId();
+    const profile = await getCurrentProfile();
     
-    if (!userId) {
-        // Pas connecté, afficher popup de connexion
+    if (!profile) {
         loginPopup.style.display = 'flex';
         return;
     }
 
-    try {
-        // Récupérer les données de l'utilisateur
-        const { data: user, error } = await supabase
-            .from('users')
-            .select('*')
-            .eq('id', userId)
-            .single();
-
-        if (error || !user) {
-            console.error('Erreur chargement profil:', error);
-            alert('Erreur lors du chargement du profil');
-            sessionStorage.removeItem('connectedUserId');
-            loginPopup.style.display = 'flex';
-            return;
-        }
-
-        currentUser = user;
-        updateProfileDisplay(user);
-
-    } catch (err) {
-        console.error('Erreur:', err);
-        alert('Erreur lors du chargement du profil');
-    }
+    updateProfileDisplay(profile);
 }
 
-// ========================================
-// MISE À JOUR AFFICHAGE PROFIL
-// ========================================
-function updateProfileDisplay(user) {
-    profilPrenom.textContent = user.prenom || '';
-    profilNom.textContent = user.nom || '';
-    profilEmail.textContent = user.email || '';
-    profilDob.textContent = user.dob ? new Date(user.dob).toLocaleDateString('fr-FR') : '';
-    profilUsername.textContent = user.username || '';
-    profilePic.src = user.photo || "https://via.placeholder.com/150";
+function updateProfileDisplay(profile) {
+    profilPrenom.textContent = profile.prenom || '';
+    profilNom.textContent = profile.nom || '';
+    profilEmail.textContent = profile.email || '';
+    profilDob.textContent = profile.dob ? new Date(profile.dob).toLocaleDateString('fr-FR') : '';
+    profilUsername.textContent = profile.username || '';
+    profilePic.src = profile.photo || "https://via.placeholder.com/150";
 }
 
-// ========================================
-// POPUP MODIFIER PROFIL
-// ========================================
-editProfileBtn.onclick = () => {
-    if (!currentUser) return;
+editProfileBtn.onclick = async () => {
+    const profile = await getCurrentProfile();
+    if (!profile) return;
     
     editPopup.style.display = 'flex';
-    document.getElementById('editPrenom').value = currentUser.prenom || '';
-    document.getElementById('editNom').value = currentUser.nom || '';
-    document.getElementById('editEmail').value = currentUser.email || '';
-    document.getElementById('editDob').value = currentUser.dob || '';
+    document.getElementById('editPrenom').value = profile.prenom || '';
+    document.getElementById('editNom').value = profile.nom || '';
+    document.getElementById('editEmail').value = profile.email || '';
+    document.getElementById('editDob').value = profile.dob || '';
     document.getElementById('editPassword').value = '';
     editPhotoInput.value = '';
 };
@@ -293,9 +259,6 @@ closePopup.onclick = () => {
     editPopup.style.display = 'none'; 
 };
 
-// ========================================
-// PRÉVISUALISATION PHOTO
-// ========================================
 editPhotoInput.onchange = function(e) {
     const file = e.target.files[0];
     if (file) {
@@ -307,12 +270,11 @@ editPhotoInput.onchange = function(e) {
     }
 };
 
-// ========================================
-// ENREGISTRER MODIFICATIONS
-// ========================================
 editForm.onsubmit = async (e) => {
     e.preventDefault();
-    if (!currentUser) return;
+    
+    const session = await getSession();
+    if (!session) return;
 
     const updates = {};
     
@@ -326,57 +288,62 @@ editForm.onsubmit = async (e) => {
     if (newNom) updates.nom = newNom;
     if (newEmail) updates.email = newEmail;
     if (newDob) updates.dob = newDob;
-    if (newPassword) updates.password = newPassword;
 
-    // Gestion de la photo
     const file = editPhotoInput.files[0];
     if (file) {
         const reader = new FileReader();
         reader.onload = async function(evt) {
             updates.photo = evt.target.result;
-            await saveProfile(updates);
+            await saveProfile(updates, newPassword);
         };
         reader.readAsDataURL(file);
     } else {
-        await saveProfile(updates);
+        await saveProfile(updates, newPassword);
     }
 };
 
-async function saveProfile(updates) {
+async function saveProfile(updates, newPassword) {
     try {
-        const { data, error } = await supabase
-            .from('users')
-            .update(updates)
-            .eq('id', currentUser.id)
-            .select();
+        const session = await getSession();
+        if (!session) return;
 
-        if (error) {
-            console.error('Erreur mise à jour:', error);
+        const { error: profileError } = await supabaseClient
+            .from('profiles')
+            .update(updates)
+            .eq('id', session.user.id);
+
+        if (profileError) {
+            console.error('Erreur profil:', profileError);
             alert('Erreur lors de la mise à jour du profil');
             return;
         }
 
+        if (newPassword) {
+            const { error: pwdError } = await supabaseClient.auth.updateUser({
+                password: newPassword
+            });
+
+            if (pwdError) {
+                console.error('Erreur mot de passe:', pwdError);
+                alert('Profil mis à jour mais erreur mot de passe');
+            }
+        }
+
         alert('Profil mis à jour avec succès !');
         editPopup.style.display = 'none';
-        await loadUserProfile(); // Recharger le profil
+        await loadUserProfile();
 
     } catch (err) {
         console.error('Erreur:', err);
-        alert('Erreur lors de la mise à jour du profil');
+        alert('Erreur : ' + err.message);
     }
 }
 
-// ========================================
-// DÉCONNEXION
-// ========================================
-logoutBtnProfile.onclick = () => {
-    sessionStorage.removeItem('connectedUserId');
+logoutBtnProfile.onclick = async () => {
+    await supabaseClient.auth.signOut();
     window.location.href = "index.html";
 };
 
-// ========================================
-// CONNEXION VIA POPUP
-// ========================================
 document.getElementById('loginPopupForm').onsubmit = async (e) => {
     e.preventDefault();
     
@@ -384,41 +351,41 @@ document.getElementById('loginPopupForm').onsubmit = async (e) => {
     const password = document.getElementById('popupPassword').value.trim();
 
     try {
-        const { data: user, error } = await supabase
-            .from('users')
-            .select('*')
+        const { data: profile, error: profileError } = await supabaseClient
+            .from('profiles')
+            .select('email, banned')
             .eq('username', username)
             .single();
 
-        if (error || !user) {
+        if (profileError || !profile) {
             alert('Utilisateur non trouvé !');
             return;
         }
 
-        if (user.password !== password) {
-            alert('Mot de passe incorrect !');
-            return;
-        }
-
-        if (user.banned) {
+        if (profile.banned) {
             alert('Votre compte a été banni !');
             return;
         }
 
-        sessionStorage.setItem('connectedUserId', user.id);
-        currentUser = user;
+        const { error: authError } = await supabaseClient.auth.signInWithPassword({
+            email: profile.email,
+            password: password
+        });
+
+        if (authError) {
+            alert('Mot de passe incorrect !');
+            return;
+        }
+
         loginPopup.style.display = 'none';
-        updateProfileDisplay(user);
+        await loadUserProfile();
 
     } catch (err) {
         console.error('Erreur connexion:', err);
-        alert('Erreur lors de la connexion');
+        alert('Erreur : ' + err.message);
     }
 };
 
-// ========================================
-// CHARGEMENT INITIAL
-// ========================================
 window.onload = async () => {
     await loadUserProfile();
 };
@@ -426,5 +393,3 @@ window.onload = async () => {
 
 </body>
 </html>
-
-
