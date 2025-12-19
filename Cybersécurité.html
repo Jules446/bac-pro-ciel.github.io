@@ -5,7 +5,6 @@
 <meta charset="UTF-8">
 <title>Cybersécurité - BAC PRO CIEL</title>
 <style>
-/* --- Général --- */
 body {
  font-family: "Comic Neue", "Kristen ITC", "Chalkboard SE", sans-serif; 
  background: linear-gradient(#a6d6f7, #5c69d6, #0a1530);
@@ -14,7 +13,6 @@ body {
  line-height:1.6;
 }
 
-/* --- Menu déroulant --- */
 .menu-bar { 
  background:#4a66ff; 
  padding:20px; 
@@ -58,11 +56,9 @@ body {
 }
 .dropdown:hover .dropdown-content { display:block; }
 
-/* --- Titres --- */
 h1 { text-align:center; font-size:80px; margin-top:50px; letter-spacing:5px; }
 h2 { text-align:center; font-size:50px; margin:30px 0 20px 0; }
 
-/* --- Texte principal --- */
 #mainText {
  width:80%; margin:0 auto 20px auto; font-size:22px; text-align:justify;
  padding:20px; background:#222; border-radius:20px; position:relative;
@@ -76,7 +72,6 @@ h2 { text-align:center; font-size:50px; margin:30px 0 20px 0; }
 #likeMainBtn:hover { background:#6e82ff; transform:scale(1.05); }
 #likeMainBtn.liked { background:#22c55e; transform:scale(1.1); }
 
-/* --- Popups --- */
 .login-popup {
  display:none;
  position:fixed;
@@ -119,7 +114,6 @@ h2 { text-align:center; font-size:50px; margin:30px 0 20px 0; }
 }
 .login-popup button:hover { background:#6e82ff; }
 
-/* --- Section Commentaires --- */
 #commentSection {
  width:80%; margin:0 auto 40px auto;
 }
@@ -144,7 +138,6 @@ h2 { text-align:center; font-size:50px; margin:30px 0 20px 0; }
 }
 #commentSection form button:hover { background:#6e82ff; }
 
-/* --- Commentaires --- */
 .comment, .reply {
  background:#222; padding:15px; border-radius:10px; margin-bottom:15px; position:relative;
 }
@@ -194,7 +187,6 @@ h2 { text-align:center; font-size:50px; margin:30px 0 20px 0; }
 }
 .deleteBtn:hover { background:#ff6666; }
 
-/* Replies container */
 .replies-container {
  margin-left: 30px;
  margin-top: 15px;
@@ -205,7 +197,6 @@ h2 { text-align:center; font-size:50px; margin:30px 0 20px 0; }
  border-left: 3px solid #4a66ff;
 }
 
-/* Reply form */
 .reply-form {
  margin-left: 30px;
  margin-top: 10px;
@@ -265,7 +256,6 @@ h2 { text-align:center; font-size:50px; margin:30px 0 20px 0; }
   </ul>
 </header>
 
-<!-- Popups Connexion/Création -->
 <div class="login-popup" id="loginForm">
     <form id="formLogin">
         <h2>Connexion</h2>
@@ -289,11 +279,10 @@ h2 { text-align:center; font-size:50px; margin:30px 0 20px 0; }
     </form>
 </div>
 
-<!-- Contenu principal -->
 <h1>BAC PRO CIEL</h1>
 <h2>Le Bac Pro CIEL en cybersécurité</h2>
 <div id="mainText">
-  La cybersécurité est un domaine essentiel dans le monde numérique actuel.<br>
+  La cybersécurité est au cœur des technologies modernes.<br>
     Les élèves du Bac Pro CIEL apprennent à protéger les systèmes informatiques contre les menaces,<br>
     à comprendre les failles de sécurité et à mettre en place des solutions pour sécuriser les réseaux et les données.<br>
     Ils découvrent également les bonnes pratiques pour prévenir les attaques et les méthodes pour réagir en cas d'incident.<br>
@@ -302,7 +291,6 @@ h2 { text-align:center; font-size:50px; margin:30px 0 20px 0; }
  <button id="likeMainBtn">👍 <span id="mainLikesCount">0</span></button>
 </div>
 
-<!-- Section Commentaires -->
 <div id="commentSection">
     <h2>Commentaires</h2>
     <form id="commentForm">
@@ -313,17 +301,13 @@ h2 { text-align:center; font-size:50px; margin:30px 0 20px 0; }
 </div>
 
 <script>
-// ========================================
-// CONFIGURATION SUPABASE - VERSION CORRIGÉE
-// ========================================
 const SUPABASE_URL = 'https://bvtzijciriawuajyzovs.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ2dHppamNpcmlhd3Vhanl6b3ZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU5NDM5MzksImV4cCI6MjA4MTUxOTkzOX0.bwECe_OuAKAy-lT73DqTwv91UufDxsgqXxds4sNtRxw'; // ⚠️ Remplacer par votre clé anon
-
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ2dHppamNpcmlhd3Vhanl6b3ZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU5NDM5MzksImV4cCI6MjA4MTUxOTkzOX0.bwECe_OuAKAy-lT73DqTwv91UufDxsgqXxds4sNtRxw';
 const { createClient } = supabase;
 const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-// ========================================
-// RÉFÉRENCES ÉLÉMENTS
-// ========================================
+
+const PAGE_NAME = 'cybersecurite';
+
 const loginBtn = document.getElementById('loginBtn');
 const signupBtn = document.getElementById('signupBtn');
 const logoutBtn = document.getElementById('logoutBtn');
@@ -338,36 +322,37 @@ const commentsList = document.getElementById('commentsList');
 let currentUser = null;
 let isAdmin = false;
 
-// ========================================
-// GESTION UTILISATEUR
-// ========================================
-function getConnectedUserId() {
-    return sessionStorage.getItem('connectedUserId');
+async function getSession() {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    return session;
 }
 
 async function loadCurrentUser() {
-    const userId = getConnectedUserId();
-    if (!userId) {
+    const session = await getSession();
+    
+    if (!session) {
+        currentUser = null;
+        isAdmin = false;
         loginBtn.style.display = 'inline-block';
         logoutBtn.style.display = 'none';
         return;
     }
 
     try {
-        const { data: user, error } = await supabase
-            .from('users')
+        const { data: profile, error } = await supabaseClient
+            .from('profiles')
             .select('*')
-            .eq('id', userId)
+            .eq('id', session.user.id)
             .single();
 
-        if (error || !user) {
+        if (error || !profile) {
             currentUser = null;
             isAdmin = false;
             return;
         }
 
-        currentUser = user;
-        isAdmin = user.role === 'admin';
+        currentUser = profile;
+        isAdmin = profile.role === 'admin';
         loginBtn.style.display = 'none';
         logoutBtn.style.display = 'inline-block';
 
@@ -376,9 +361,6 @@ async function loadCurrentUser() {
     }
 }
 
-// ========================================
-// POPUPS
-// ========================================
 loginBtn.addEventListener('click', (e) => {
     e.preventDefault();
     loginForm.classList.add('active');
@@ -405,9 +387,6 @@ signupForm.addEventListener('click', (e) => {
     if (e.target === signupForm) signupForm.classList.remove('active');
 });
 
-// ========================================
-// CONNEXION
-// ========================================
 document.getElementById('formLogin').addEventListener('submit', async (e) => {
     e.preventDefault();
     
@@ -415,29 +394,33 @@ document.getElementById('formLogin').addEventListener('submit', async (e) => {
     const password = document.getElementById('loginPassword').value.trim();
 
     try {
-        const { data: user, error } = await supabase
-            .from('users')
-            .select('*')
+        const { data: profile, error: profileError } = await supabaseClient
+            .from('profiles')
+            .select('email, banned')
             .eq('username', username)
             .single();
 
-        if (error || !user) {
+        if (profileError || !profile) {
             alert('Utilisateur inconnu !');
             return;
         }
 
-        if (user.password !== password) {
-            alert('Mot de passe incorrect !');
-            return;
-        }
-
-        if (user.banned) {
+        if (profile.banned) {
             alert('Votre compte a été banni !');
             return;
         }
 
-        sessionStorage.setItem('connectedUserId', user.id);
-        alert(`Bienvenue ${user.prenom} !`);
+        const { error: authError } = await supabaseClient.auth.signInWithPassword({
+            email: profile.email,
+            password: password
+        });
+
+        if (authError) {
+            alert('Mot de passe incorrect !');
+            return;
+        }
+
+        alert('Bienvenue !');
         loginForm.classList.remove('active');
         await loadCurrentUser();
         await loadMainLikes();
@@ -445,13 +428,10 @@ document.getElementById('formLogin').addEventListener('submit', async (e) => {
 
     } catch (err) {
         console.error('Erreur connexion:', err);
-        alert('Erreur lors de la connexion');
+        alert('Erreur : ' + err.message);
     }
 });
 
-// ========================================
-// INSCRIPTION
-// ========================================
 document.getElementById('formSignup').addEventListener('submit', async (e) => {
     e.preventDefault();
     
@@ -462,27 +442,37 @@ document.getElementById('formSignup').addEventListener('submit', async (e) => {
     const password = document.getElementById('signupPassword').value.trim();
 
     try {
-        const { data: existing } = await supabase
-            .from('users')
+        const { data: existing } = await supabaseClient
+            .from('profiles')
             .select('id')
             .eq('username', username)
-            .single();
+            .maybeSingle();
 
         if (existing) {
             alert('Ce nom d\'utilisateur existe déjà !');
             return;
         }
 
-        const { error } = await supabase
-            .from('users')
-            .insert([{
-                prenom, nom, email, username, password,
-                role: 'client'
-            }]);
+        const { data: authData, error: authError } = await supabaseClient.auth.signUp({
+            email: email,
+            password: password
+        });
 
-        if (error) {
-            console.error('Erreur inscription:', error);
-            alert('Erreur lors de la création du compte');
+        if (authError) {
+            alert('Erreur : ' + authError.message);
+            return;
+        }
+
+        const { error: profileError } = await supabaseClient
+            .from('profiles')
+            .insert({
+                id: authData.user.id,
+                email, username, prenom, nom,
+                role: 'client'
+            });
+
+        if (profileError) {
+            alert('Erreur lors de la création du profil');
             return;
         }
 
@@ -492,38 +482,32 @@ document.getElementById('formSignup').addEventListener('submit', async (e) => {
 
     } catch (err) {
         console.error('Erreur inscription:', err);
-        alert('Erreur lors de la création du compte');
+        alert('Erreur : ' + err.message);
     }
 });
 
-// ========================================
-// DÉCONNEXION
-// ========================================
-logoutBtn.addEventListener('click', () => {
-    sessionStorage.removeItem('connectedUserId');
+logoutBtn.addEventListener('click', async () => {
+    await supabaseClient.auth.signOut();
     location.reload();
 });
 
-// ========================================
-// LIKE DU TEXTE PRINCIPAL
-// ========================================
 async function loadMainLikes() {
     try {
-        const { count } = await supabase
+        const { count } = await supabaseClient
             .from('main_text_likes')
             .select('*', { count: 'exact', head: true })
             .eq('page', PAGE_NAME);
 
         document.getElementById('mainLikesCount').textContent = count || 0;
 
-        const userId = getConnectedUserId();
-        if (userId) {
-            const { data } = await supabase
+        const session = await getSession();
+        if (session) {
+            const { data } = await supabaseClient
                 .from('main_text_likes')
                 .select('id')
                 .eq('page', PAGE_NAME)
-                .eq('user_id', userId)
-                .single();
+                .eq('user_id', session.user.id)
+                .maybeSingle();
 
             if (data) {
                 likeMainBtn.classList.add('liked');
@@ -535,35 +519,33 @@ async function loadMainLikes() {
 }
 
 likeMainBtn.addEventListener('click', async () => {
-    const userId = getConnectedUserId();
-    if (!userId) {
+    const session = await getSession();
+    if (!session) {
         alert('Vous devez être connecté pour liker');
         return;
     }
 
     try {
-        const { data: existing } = await supabase
+        const { data: existing } = await supabaseClient
             .from('main_text_likes')
             .select('id')
             .eq('page', PAGE_NAME)
-            .eq('user_id', userId)
-            .single();
+            .eq('user_id', session.user.id)
+            .maybeSingle();
 
         if (existing) {
-            // Supprimer le like
-            await supabase
+            await supabaseClient
                 .from('main_text_likes')
                 .delete()
                 .eq('id', existing.id);
                 
             likeMainBtn.classList.remove('liked');
         } else {
-            // Ajouter le like
-            await supabase
+            await supabaseClient
                 .from('main_text_likes')
                 .insert([{
                     page: PAGE_NAME,
-                    user_id: userId
+                    user_id: session.user.id
                 }]);
                 
             likeMainBtn.classList.add('liked');
@@ -573,18 +555,15 @@ likeMainBtn.addEventListener('click', async () => {
 
     } catch (err) {
         console.error('Erreur like:', err);
-        alert('Erreur lors du like');
+        alert('Erreur : ' + err.message);
     }
 });
 
-// ========================================
-// COMMENTAIRES
-// ========================================
 commentForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     
-    const userId = getConnectedUserId();
-    if (!userId) {
+    const session = await getSession();
+    if (!session) {
         alert('Vous devez être connecté pour commenter');
         return;
     }
@@ -593,13 +572,14 @@ commentForm.addEventListener('submit', async (e) => {
     if (!text) return;
 
     try {
-        await supabase
+        await supabaseClient
             .from('comments')
             .insert([{
                 text: text,
-                user_id: userId,
+                user_id: session.user.id,
                 username: currentUser.username,
-                actualite_id: null // null car c'est un commentaire de page
+                page: PAGE_NAME,
+                actualite_id: null
             }]);
 
         document.getElementById('commentText').value = '';
@@ -607,15 +587,16 @@ commentForm.addEventListener('submit', async (e) => {
 
     } catch (err) {
         console.error('Erreur ajout commentaire:', err);
-        alert('Erreur lors de l\'ajout du commentaire');
+        alert('Erreur : ' + err.message);
     }
 });
 
 async function loadComments() {
     try {
-        const { data: comments, error } = await supabase
+        const { data: comments, error } = await supabaseClient
             .from('comments')
             .select('*')
+            .eq('page', PAGE_NAME)
             .is('actualite_id', null)
             .eq('hidden', false)
             .order('created_at', { ascending: false });
@@ -646,9 +627,9 @@ async function createCommentElement(comment) {
     
     const date = new Date(comment.created_at).toLocaleString('fr-FR');
     
-    const deleteButton = (isAdmin || (currentUser && currentUser.id === comment.user_id)) 
-        ? `<button class="deleteBtn" onclick="deleteComment('${comment.id}')">Supprimer</button>` 
-        : '';
+    const session = await getSession();
+    const canDelete = isAdmin || (session && session.user.id === comment.user_id);
+    const deleteButton = canDelete ? `<button class="deleteBtn" onclick="deleteComment('${comment.id}')">Supprimer</button>` : '';
     
     div.innerHTML = `
         <div class="comment-header">
@@ -671,18 +652,14 @@ async function createCommentElement(comment) {
         <div class="replies-container" id="replies-${comment.id}"></div>
     `;
     
-    // Charger les réponses
     await loadReplies(comment.id);
     
     return div;
 }
 
-// ========================================
-// LIKES COMMENTAIRES
-// ========================================
 async function getCommentLikesCount(commentId) {
     try {
-        const { count } = await supabase
+        const { count } = await supabaseClient
             .from('comment_likes')
             .select('*', { count: 'exact', head: true })
             .eq('comment_id', commentId);
@@ -693,16 +670,16 @@ async function getCommentLikesCount(commentId) {
 }
 
 async function checkIfCommentLiked(commentId) {
-    const userId = getConnectedUserId();
-    if (!userId) return false;
+    const session = await getSession();
+    if (!session) return false;
     
     try {
-        const { data } = await supabase
+        const { data } = await supabaseClient
             .from('comment_likes')
             .select('id')
             .eq('comment_id', commentId)
-            .eq('user_id', userId)
-            .single();
+            .eq('user_id', session.user.id)
+            .maybeSingle();
         return !!data;
     } catch (err) {
         return false;
@@ -710,31 +687,31 @@ async function checkIfCommentLiked(commentId) {
 }
 
 async function toggleLikeComment(commentId) {
-    const userId = getConnectedUserId();
-    if (!userId) {
+    const session = await getSession();
+    if (!session) {
         alert('Vous devez être connecté pour liker');
         return;
     }
     
     try {
-        const { data: existing } = await supabase
+        const { data: existing } = await supabaseClient
             .from('comment_likes')
             .select('id')
             .eq('comment_id', commentId)
-            .eq('user_id', userId)
-            .single();
+            .eq('user_id', session.user.id)
+            .maybeSingle();
 
         if (existing) {
-            await supabase
+            await supabaseClient
                 .from('comment_likes')
                 .delete()
                 .eq('id', existing.id);
         } else {
-            await supabase
+            await supabaseClient
                 .from('comment_likes')
                 .insert([{
                     comment_id: commentId,
-                    user_id: userId
+                    user_id: session.user.id
                 }]);
         }
 
@@ -742,15 +719,12 @@ async function toggleLikeComment(commentId) {
 
     } catch (err) {
         console.error('Erreur like commentaire:', err);
-        alert('Erreur lors du like');
+        alert('Erreur : ' + err.message);
     }
 }
 
-// ========================================
-// RÉPONSES AUX COMMENTAIRES
-// ========================================
 function showReplyForm(commentId) {
-    if (!getConnectedUserId()) {
+    if (!currentUser) {
         alert('Vous devez être connecté pour répondre');
         return;
     }
@@ -762,18 +736,18 @@ function hideReplyForm(commentId) {
 }
 
 async function submitReply(commentId) {
-    const userId = getConnectedUserId();
-    if (!userId) return;
+    const session = await getSession();
+    if (!session) return;
     
     const text = document.getElementById(`reply-text-${commentId}`).value.trim();
     if (!text) return;
     
     try {
-        await supabase
+        await supabaseClient
             .from('replies')
             .insert([{
                 comment_id: commentId,
-                user_id: userId,
+                user_id: session.user.id,
                 username: currentUser.username,
                 text: text
             }]);
@@ -783,13 +757,13 @@ async function submitReply(commentId) {
 
     } catch (err) {
         console.error('Erreur ajout réponse:', err);
-        alert('Erreur lors de l\'ajout de la réponse');
+        alert('Erreur : ' + err.message);
     }
 }
 
 async function loadReplies(commentId) {
     try {
-        const { data: replies, error } = await supabase
+        const { data: replies, error } = await supabaseClient
             .from('replies')
             .select('*')
             .eq('comment_id', commentId)
@@ -819,9 +793,9 @@ async function createReplyElement(reply) {
     
     const date = new Date(reply.created_at).toLocaleString('fr-FR');
     
-    const deleteButton = (isAdmin || (currentUser && currentUser.id === reply.user_id)) 
-        ? `<button class="deleteBtn" onclick="deleteReply('${reply.id}', '${reply.comment_id}')">Supprimer</button>` 
-        : '';
+    const session = await getSession();
+    const canDelete = isAdmin || (session && session.user.id === reply.user_id);
+    const deleteButton = canDelete ? `<button class="deleteBtn" onclick="deleteReply('${reply.id}', '${reply.comment_id}')">Supprimer</button>` : '';
     
     div.innerHTML = `
         <div class="comment-header">
@@ -840,12 +814,9 @@ async function createReplyElement(reply) {
     return div;
 }
 
-// ========================================
-// LIKES RÉPONSES
-// ========================================
 async function getReplyLikesCount(replyId) {
     try {
-        const { count } = await supabase
+        const { count } = await supabaseClient
             .from('reply_likes')
             .select('*', { count: 'exact', head: true })
             .eq('reply_id', replyId);
@@ -856,16 +827,16 @@ async function getReplyLikesCount(replyId) {
 }
 
 async function checkIfReplyLiked(replyId) {
-    const userId = getConnectedUserId();
-    if (!userId) return false;
+    const session = await getSession();
+    if (!session) return false;
     
     try {
-        const { data } = await supabase
+        const { data } = await supabaseClient
             .from('reply_likes')
             .select('id')
             .eq('reply_id', replyId)
-            .eq('user_id', userId)
-            .single();
+            .eq('user_id', session.user.id)
+            .maybeSingle();
         return !!data;
     } catch (err) {
         return false;
@@ -873,31 +844,31 @@ async function checkIfReplyLiked(replyId) {
 }
 
 async function toggleLikeReply(replyId) {
-    const userId = getConnectedUserId();
-    if (!userId) {
+    const session = await getSession();
+    if (!session) {
         alert('Vous devez être connecté pour liker');
         return;
     }
     
     try {
-        const { data: existing } = await supabase
+        const { data: existing } = await supabaseClient
             .from('reply_likes')
             .select('id')
             .eq('reply_id', replyId)
-            .eq('user_id', userId)
-            .single();
+            .eq('user_id', session.user.id)
+            .maybeSingle();
 
         if (existing) {
-            await supabase
+            await supabaseClient
                 .from('reply_likes')
                 .delete()
                 .eq('id', existing.id);
         } else {
-            await supabase
+            await supabaseClient
                 .from('reply_likes')
                 .insert([{
                     reply_id: replyId,
-                    user_id: userId
+                    user_id: session.user.id
                 }]);
         }
 
@@ -905,18 +876,15 @@ async function toggleLikeReply(replyId) {
 
     } catch (err) {
         console.error('Erreur like réponse:', err);
-        alert('Erreur lors du like');
+        alert('Erreur : ' + err.message);
     }
 }
 
-// ========================================
-// SUPPRESSION
-// ========================================
 async function deleteComment(commentId) {
     if (!confirm('Supprimer ce commentaire ?')) return;
     
     try {
-        await supabase
+        await supabaseClient
             .from('comments')
             .delete()
             .eq('id', commentId);
@@ -925,38 +893,36 @@ async function deleteComment(commentId) {
 
     } catch (err) {
         console.error('Erreur suppression commentaire:', err);
-        alert('Erreur lors de la suppression');
+        alert('Erreur : ' + err.message);
     }
 }
 
-async function deleteReply(replyId, commentId) {
-    if (!confirm('Supprimer cette réponse ?')) return;
-    
-    try {
-        await supabase
-            .from('replies')
-            .delete()
-            .eq('id', replyId);
+async function deleteReply(replyId, comment<function_calls>
+<invoke name="artifacts">
+<parameter name="command">update</parameter>
+<parameter name="id">cybersecu-html-complet</parameter>
+<parameter name="old_str">async function deleteReply(replyId, comment</parameter>
+<parameter name="new_str">async function deleteReply(replyId, commentId) {
+if (!confirm('Supprimer cette réponse ?')) return;
+try {
+    await supabaseClient
+        .from('replies')
+        .delete()
+        .eq('id', replyId);
 
-        await loadComments();
-
-    } catch (err) {
-        console.error('Erreur suppression réponse:', err);
-        alert('Erreur lors de la suppression');
-    }
-}
-
-// ========================================
-// CHARGEMENT INITIAL
-// ========================================
-window.onload = async () => {
-    await loadCurrentUser();
-    await loadMainLikes();
     await loadComments();
+
+} catch (err) {
+    console.error('Erreur suppression réponse:', err);
+    alert('Erreur : ' + err.message);
+}
+}
+window.onload = async () => {
+await loadCurrentUser();
+await loadMainLikes();
+await loadComments();
 };
 </script>
-
 </body>
 </html>
-
-
+</parameter>
