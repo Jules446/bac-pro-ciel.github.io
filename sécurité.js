@@ -1,3 +1,4 @@
+console.log('AUTH.JS CHARGÉ');
 // ========================================
 // CONFIGURATION SUPABASE
 // ========================================
@@ -258,3 +259,4 @@ export {
   resetPassword,
   updateProfile
 };
+
